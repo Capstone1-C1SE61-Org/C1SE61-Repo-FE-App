@@ -1,41 +1,88 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import AntDesign from '@expo/vector-icons/build/AntDesign';
-import { Entypo, Feather, FontAwesome } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { Feather } from '@expo/vector-icons';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+import axios from 'axios'; // Import axios
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const SignUpScreen = () => {
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+  
+  // Sử dụng useNavigation để lấy navigation
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  const handleSignUp = () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Please fill out all fields');
+  // Hàm xử lý đăng ký
+  const handleSignUp = async () => {
+    if (!username || !password || !email || !fullName) {
+      Alert.alert('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
-      return;
-    }
+    try {
+      // Thực hiện yêu cầu API đăng ký
+      const response = await axios.post('https://your-api-endpoint/signup', {
+        username: username,
+        password: password,
+        email: email,
+        fullName: fullName,
+      });
 
-    // You can add your sign-up logic here (e.g., API call)
-    Alert.alert('Sign Up Successful!');
+      // Kiểm tra nếu đăng ký thành công và có token
+      if (response.data && response.data.token) {
+        // Lưu các thông tin vào AsyncStorage
+        await AsyncStorage.setItem('userToken', response.data.token);
+        await AsyncStorage.setItem('userType', response.data.type);
+        await AsyncStorage.setItem('userId', response.data.id.toString());
+        await AsyncStorage.setItem('username', response.data.username);
+        await AsyncStorage.setItem('roles', JSON.stringify(response.data.roles));
+
+        // Chuyển hướng đến màn hình đăng nhập sau khi đăng ký thành công
+        Alert.alert('Đăng ký thành công!', 'Chúc mừng bạn đã đăng ký thành công.');
+        navigation.navigate('Login'); // Chuyển hướng đến màn hình đăng nhập
+      } else {
+        Alert.alert('Đăng ký thất bại', 'Vui lòng thử lại sau');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
+    }
   };
 
   return (
     <View style={styles.container}>
-      
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Sign Up</Text>
+        <Text style={styles.headerText}>Đăng Ký</Text>
       </View>
 
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
-          <AntDesign name="user" size={24} color="black" style={styles.icon}/>
+          <AntDesign name="user" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Full Name"
+            placeholder="Tên tài khoản"
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <AntDesign name="mail" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Email"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <Feather name="user" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Họ và tên"
             style={styles.input}
             value={fullName}
             onChangeText={setFullName}
@@ -43,20 +90,9 @@ const SignUpScreen = () => {
         </View>
 
         <View style={styles.inputWrapper}>
-        <FontAwesome name="envelope" size={24} color="black" style={styles.icon}/>
+          <Feather name="lock" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Email"
-            style={styles.input}
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        <View style={styles.inputWrapper}>
-        <Feather name="lock" size={24} color="black" style={styles.icon} />
-          <TextInput
-            placeholder="Password"
+            placeholder="Mật khẩu"
             style={styles.input}
             secureTextEntry
             value={password}
@@ -64,39 +100,12 @@ const SignUpScreen = () => {
           />
         </View>
 
-        <View style={styles.inputWrapper}>
-        <Feather name="lock" size={20} color="black" style={styles.icon} />
-          <TextInput
-            placeholder="Confirm Password"
-            style={styles.input}
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-        </View>
-
         <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-          <Text style={styles.signUpButtonText}>Sign up</Text>
+          <Text style={styles.signUpButtonText}>ĐĂNG KÝ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.orText}>Or connect using</Text>
-
-      <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton}>
-            <Entypo name="facebook" size={24} color="white" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton}>
-            <AntDesign name="google" size={24} color="white"/>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton}>
-            <AntDesign name="twitter" size={24} color="white" />
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.haveAccountText}>Đã có tài khoản? Đăng nhập</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -105,15 +114,11 @@ const SignUpScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    top: 100,
     flex: 1,
     backgroundColor: '#F0F0F0',
     alignItems: 'center',
     paddingHorizontal: 20,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginTop: 40,
-    marginLeft: 20,
   },
   headerContainer: {
     marginVertical: 20,
@@ -160,31 +165,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  forgotPasswordText: {
+  haveAccountText: {
     color: '#6a4ee4',
     textAlign: 'center',
     marginVertical: 10,
-  },
-  orText: {
-    fontSize: 16,
-    color: 'gray',
-    marginVertical: 20,
-  },
-  socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '60%',
-  },
-  socialButton: {
-    backgroundColor: '#6a4ee4',
-    padding: 10,
-    borderRadius: 50,
-  },
-  skipText: {
-    marginTop: 20,
-    color: '#6a4ee4',
-    fontSize: 18,
-    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });
 
