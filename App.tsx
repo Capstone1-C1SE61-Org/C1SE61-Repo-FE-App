@@ -14,7 +14,7 @@ function Wellcome(props: any) {
   const { navigation } = props;
   return (
     <View>
-      <Text style={{ fontSize: 40, alignItems: 'center', justifyContent: 'center' }}>P3L</Text>
+      <Text style={{ fontSize: 40, alignItems: 'center', justifyContent: 'center' }}>Sochidev</Text>
       <Button title='SignUp'
         onPress={() => navigation.navigate("SignUp")} />
       <Button title='Login'
@@ -38,17 +38,17 @@ function App() {
         <Stack.Screen 
           name="SignUp" 
           component={SignUpScreen} 
-          options={{ title: "Đăng ký" }} 
+          options={{ headerShown: false }} 
         />
         <Stack.Screen 
           name="Login" 
           component={LoginScreen} 
-          options={{ title: "Đăng nhập" }} 
+          options={{ headerShown: false }} 
         />
         <Stack.Screen 
           name="home" 
           component={HomeTabs} 
-          options={{ title: "Trang chính" }} 
+          options={{ headerShown: false }} 
         />
         <Stack.Screen 
             name="navlist" 

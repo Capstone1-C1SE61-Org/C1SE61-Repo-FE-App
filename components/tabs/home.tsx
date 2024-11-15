@@ -73,6 +73,7 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
 const styles = StyleSheet.create({
   container: {
+    top: 28,
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -134,6 +135,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomNavigation: {
+    top: -30,
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
