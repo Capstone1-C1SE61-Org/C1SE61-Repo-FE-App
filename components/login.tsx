@@ -1,49 +1,75 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import axios from 'axios'; // Import axios
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { API_URL, useAuth } from '../api/AuthContextAPI';
 
 const LoginScreen = () => {
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+  const { onLogin, onRegister } = useAuth();
+
+  useEffect(() => {
+    const testCall = async () => {
+      const result = await axios.get(`${API_URL}/users`);
+
+      console.log("File: login.tsx:19 ~ testCall ~ result:", result);
+    };
+    testCall();
+  }, [])
+
   // Sử dụng useNavigation để lấy navigation
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   // Đổi tên hàm để không bị trùng với tên component
   const handleLogin = async () => {
-    if (!fullName || !password) {
-      Alert.alert('Vui lòng điền đầy đủ thông tin');
-      return;
+    const result = await onLogin!(username, password);
+    if (result && result.error) {
+      alert(result.msg);
     }
 
-    try {
-      // Thực hiện yêu cầu API đăng nhập
-      const response = await axios.post('http://localhost:8080/api/v1/public/login', {
-        username: fullName,
-        password: password,
-      });
+    // if (!username || !password) {
+    //   Alert.alert('Vui lòng điền đầy đủ thông tin');
+    //   return;
+    // }
 
-      // Kiểm tra nếu đăng nhập thành công và có token
-      if (response.data && response.data.token) {
-        // Lưu các thông tin vào AsyncStorage
-        await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userType', response.data.type);
-        await AsyncStorage.setItem('userId', response.data.id.toString());
-        await AsyncStorage.setItem('username', response.data.username);
-        await AsyncStorage.setItem('roles', JSON.stringify(response.data.roles));
+    // try {
+    //   // Thực hiện yêu cầu API đăng nhập
+    //   const response = await axios.post('http://localhost:8080/api/v1/public/login', {
+    //     username: username,
+    //     password: password,
+    //   });
 
-        // Chuyển hướng đến màn hình chính sau khi đăng nhập thành công
-        navigation.navigate('Home'); // Hoặc màn hình nào bạn muốn chuyển hướng
-      } else {
-        Alert.alert('Đăng nhập thất bại', 'Thông tin đăng nhập không chính xác');
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
+    //   // Kiểm tra nếu đăng nhập thành công và có token
+    //   if (response.data && response.data.token) {
+    //     // Lưu các thông tin vào AsyncStorage
+    //     await AsyncStorage.setItem('userToken', response.data.token);
+    //     await AsyncStorage.setItem('userType', response.data.type);
+    //     await AsyncStorage.setItem('userId', response.data.id.toString());
+    //     await AsyncStorage.setItem('username', response.data.username);
+    //     await AsyncStorage.setItem('roles', JSON.stringify(response.data.roles));
+
+    //     // Chuyển hướng đến màn hình chính sau khi đăng nhập thành công
+    //     navigation.navigate('Home'); // Hoặc màn hình nào bạn muốn chuyển hướng
+    //   } else {
+    //     Alert.alert('Đăng nhập thất bại', 'Thông tin đăng nhập không chính xác');
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    //   Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
+    // }
+  };
+
+  // We automatically call the login after a successful registration
+  const handleRegister = async () => {
+    const result = await onRegister!(username, password);
+    if (result && result.error) {
+      alert(result.msg)
+    } else {
+      handleLogin();
     }
   };
 
@@ -59,8 +85,8 @@ const LoginScreen = () => {
           <TextInput
             placeholder="Tên tài khoản"
             style={styles.input}
-            value={fullName}
-            onChangeText={setFullName}
+            value={username}
+            onChangeText={setUsername}
           />
         </View>
 
@@ -85,7 +111,7 @@ const LoginScreen = () => {
 
         <View style={styles.SignUpText}>
           <Text>
-            <Text style={[styles.loginText, { color: 'blue' }]}>Đã có tài khoản? </Text> 
+            <Text style={[styles.loginText, { color: 'blue' }]}>Đã có tài khoản? </Text>
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.loginBoxText}>Đăng Ký</Text>
