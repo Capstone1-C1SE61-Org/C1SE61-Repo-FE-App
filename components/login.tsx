@@ -10,11 +10,11 @@ import { API_URL, useAuth } from '../api/AuthContextAPI';
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { onLogin, onRegister } = useAuth();
+  const { onLogin } = useAuth();
 
   useEffect(() => {
     const testCall = async () => {
-      const result = await axios.get(`${API_URL}/users`);
+      const result = await axios.get(`${API_URL}/public/login`);
 
       console.log("File: login.tsx:19 ~ testCall ~ result:", result);
     };
@@ -61,16 +61,6 @@ const LoginScreen = () => {
     //   console.error(error);
     //   Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
     // }
-  };
-
-  // We automatically call the login after a successful registration
-  const handleRegister = async () => {
-    const result = await onRegister!(username, password);
-    if (result && result.error) {
-      alert(result.msg)
-    } else {
-      handleLogin();
-    }
   };
 
   return (

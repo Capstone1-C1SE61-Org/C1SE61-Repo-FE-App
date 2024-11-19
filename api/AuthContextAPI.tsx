@@ -12,8 +12,8 @@ interface AuthProps {
   onLogout?: () => Promise<any>;
 }
 
-const TOKEN_KEY = "my-jwt";
-export const API_URL = "http://localhost:8080/api/v1";
+const TOKEN_KEY = "jwt_token";
+export const API_URL = "http://192.168.1.8:8080/api/v1";
 const AuthContext = createContext<AuthProps>({});
 
 export const useAuth = () => {
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: any) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const result = await axios.post(`${API_URL}/auth`, {
+      const result = await axios.post(`${API_URL}/public/login`, {
         username,
         password,
       });
