@@ -13,7 +13,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = "jwt_token";
-export const API_URL = "http://192.168.1.8:8080/api/v1";
+export const API_URL = "http://172.26.49.92:8080/api/v1";
 const AuthContext = createContext<AuthProps>({});
 
 export const useAuth = () => {
@@ -64,20 +64,27 @@ export const AuthProvider = ({ children }: any) => {
         password,
       });
 
-      console.log("File: AuthContextAPI.tsx:47 ~ login ~ result:", result);
+      console.log("Backend Response:", result.data);
 
-      setAuthState({
-        token: result.data.token,
-        authenticated: true,
-      });
+      if (result.data && result.data.token) {
+        setAuthState({
+          token: result.data.token,
+          authenticated: true,
+        });
 
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${result.data.token}`;
-
-      await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
-
-      return result;
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${result.data.token}`;
+  
+        await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
+  
+        return result;
+      } else {
+        return {
+          error: true,
+          msg: "No token received from the server",
+      };
+      }
     } catch (e) {
       return {
         error: true,
