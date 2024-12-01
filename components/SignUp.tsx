@@ -45,11 +45,11 @@ const SignUpScreen = () => {
         navigation.navigate('Login'); // Chuyển hướng đến màn hình đăng nhập
       } else {
         Alert.alert('Đăng ký thất bại', 'Vui lòng thử lại sau');
-      } 
+      }
     } catch (error) {
       console.error(error);
       Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
-    } 
+    }
   };
 
   return (

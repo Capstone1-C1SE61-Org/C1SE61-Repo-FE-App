@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "types": ["@types/react", "@types/react-native"]
+  },
+  "include": [
+    "src",
+    "router.d.ts" // Bao gồm file router.d.ts
+  ]
+}

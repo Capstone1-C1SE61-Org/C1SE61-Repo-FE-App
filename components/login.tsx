@@ -5,7 +5,7 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import axios from 'axios'; // Import axios
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
-import { API_URL, useAuth } from '../../api/AuthContextAPI';
+import { API_URL, useAuth } from '../api/AuthContextAPI';
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
@@ -14,7 +14,7 @@ const LoginScreen = () => {
 
   useEffect(() => {
     const testCall = async () => {
-      const result = await axios.post(`${API_URL}/public/login`);
+      const result = await axios.get(`${API_URL}/public/login`);
 
       console.log("File: login.tsx:19 ~ testCall ~ result:", result);
     };
@@ -26,22 +26,9 @@ const LoginScreen = () => {
 
   // Đổi tên hàm để không bị trùng với tên component
   const handleLogin = async () => {
-    // const result = await onLogin!(username, password);
-    // if (result && result.error) {
-    //   alert(result.msg);
-    // }
-
-    if (!username || !password) {
-      Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
-      return;
-    }
-
     const result = await onLogin!(username, password);
-
     if (result && result.error) {
-      Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-    } else {
-      navigation.navigate("home");
+      alert(result.msg);
     }
 
     // if (!username || !password) {
