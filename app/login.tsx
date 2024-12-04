@@ -5,7 +5,7 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import axios from 'axios'; // Import axios
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
-import { API_URL, useAuth } from '../../api/AuthContextAPI';
+import { API_URL, useAuth } from '@/context/AuthContextAPI';
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
@@ -26,54 +26,25 @@ const LoginScreen = () => {
 
   // Đổi tên hàm để không bị trùng với tên component
   const handleLogin = async () => {
-    // const result = await onLogin!(username, password);
-    // if (result && result.error) {
-    //   alert(result.msg);
-    // }
-
-    if (!username || !password) {
-      Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
-      return;
-    }
 
     const result = await onLogin!(username, password);
-
     if (result && result.error) {
-      Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-    } else {
-      navigation.navigate("home");
+      alert(result.msg);
     }
 
     // if (!username || !password) {
-    //   Alert.alert('Vui lòng điền đầy đủ thông tin');
+    //   Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
     //   return;
     // }
 
-    // try {
-    //   // Thực hiện yêu cầu API đăng nhập
-    //   const response = await axios.post('http://localhost:8080/api/v1/public/login', {
-    //     username: username,
-    //     password: password,
-    //   });
+    // const result = await onLogin!(username, password);
 
-    //   // Kiểm tra nếu đăng nhập thành công và có token
-    //   if (response.data && response.data.token) {
-    //     // Lưu các thông tin vào AsyncStorage
-    //     await AsyncStorage.setItem('userToken', response.data.token);
-    //     await AsyncStorage.setItem('userType', response.data.type);
-    //     await AsyncStorage.setItem('userId', response.data.id.toString());
-    //     await AsyncStorage.setItem('username', response.data.username);
-    //     await AsyncStorage.setItem('roles', JSON.stringify(response.data.roles));
-
-    //     // Chuyển hướng đến màn hình chính sau khi đăng nhập thành công
-    //     navigation.navigate('Home'); // Hoặc màn hình nào bạn muốn chuyển hướng
-    //   } else {
-    //     Alert.alert('Đăng nhập thất bại', 'Thông tin đăng nhập không chính xác');
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    //   Alert.alert('Đã có lỗi xảy ra', 'Vui lòng thử lại sau');
+    // if (result && result.error) {
+    //   Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
+    // } else {
+    //   navigation.navigate("home");
     // }
+
   };
 
   return (

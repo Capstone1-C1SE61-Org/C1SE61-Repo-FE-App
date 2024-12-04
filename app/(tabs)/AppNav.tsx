@@ -1,24 +1,24 @@
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Wellcome from "../screens/wellcome";
-import { useAuth } from "../../api/AuthContextAPI";
-import HomeTabs from "../../components/tabs/home";
+import { useAuth } from "@/context/AuthContextAPI";
+import { NavigationContainer } from "@react-navigation/native";
+import Wellcome from "../wellcome";
 import { Button } from "react-native";
-import SignUpScreen from "../screens/SignUp";
-import LoginScreen from "../screens/login";
+import LoginScreen from "../login";
+import SignUpScreen from "../SignUp";
+import TabLayout from "./tabNavigation";
 
 const Stack = createNativeStackNavigator();
 function AppNav() {
     const { authState, onLogout } = useAuth();
     return (
-        <NavigationContainer independent={true}>
-            <Stack.Navigator initialRouteName="Wellcome">
+        <NavigationContainer>
+            <Stack.Navigator>
                 <Stack.Screen name="Wellcome" component={Wellcome} />
                 <Stack.Screen name="SignUp" component={SignUpScreen} />
                 {authState?.authenticated ? (
                     <Stack.Screen
                         name="home"
-                        component={HomeTabs}
+                        component={TabLayout}
                         options={{
                             headerShown: false,
                             headerRight: () => <Button onPress={onLogout} title='Sign Out' />
@@ -33,8 +33,6 @@ function AppNav() {
                 )}
             </Stack.Navigator>
         </NavigationContainer>
-
-
     );
 }
 export default AppNav;
