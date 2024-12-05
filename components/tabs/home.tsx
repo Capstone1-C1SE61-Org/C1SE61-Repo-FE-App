@@ -1,44 +1,48 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-// import { createDrawerNavigator } from '@react-navigation/drawer';
+import {   View, Text, TextInput, TouchableOpacity, StyleSheet,  FlatList } from 'react-native';
+import {   FontAwesome, Ionicons,  MaterialCommunityIcons } from '@expo/vector-icons';
+import 'react-native-gesture-handler';
+import {   createDrawerNavigator } from '@react-navigation/drawer';
+import {   NavigationContainer, useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 
 interface Language {
   name: string;
   description: string;
   color: string;
+  address: string;
 }
 
 const languages = [
-  { name: 'HTML', description: 'The language for building web pages', color: '#9A59FF' },
-  { name: 'JAVA', description: 'A Programming Language', color: '#FFDD44' },
-  { name: 'CSS', description: 'The language for styling web pages', color: '#33A2FF' },
-  { name: 'C#', description: 'A Programming Language', color: '#9A59FF' },
+  { name: 'HTML', description: 'The language for building web pages', color: '#9A59FF', address: 'hamC' },
+  { name: 'JAVA', description: 'A Programming Language', color: '#FFDD44', address: 'hamC' },
+  { name: 'CSS', description: 'The language for styling web pages', color: '#33A2FF', address: 'hamC' },
+  { name: 'C#', description: 'A Programming Language', color: '#9A59FF' , address: 'hamC' },
 ];
 
 const HomeTabs = () => {
-  const renderLanguage = ({ item } : {item: Language}) => (
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const renderLanguage = ({ item }: { item: Language }) => (
     <View style={[styles.languageCard, { backgroundColor: item.color }]}>
       <Text style={styles.languageTitle}>{item.name}</Text>
       <Text style={styles.languageDescription}>{item.description}</Text>
+      {/* Navigation button for each language */}
+      <TouchableOpacity
+        style={styles.languageButton}
+        onPress={() => navigation.navigate(item.address)} // Navigate to corresponding language screen
+      >
+        <Text style={styles.languageButtonText}>Learn {item.name}</Text>
+      </TouchableOpacity>
     </View>
   );
-
-const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('navlist')}>
-          <Ionicons name="menu" size={24} color="black"/>
+          <Ionicons name="menu" size={24} color="black" />
         </TouchableOpacity>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search..."
-          placeholderTextColor="#999"
-        />
+        <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
         <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('Notification')}>
           <Ionicons name="notifications-outline" size={24} color="black" />
           <View style={styles.notificationBadge}>
@@ -60,10 +64,10 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
         <TouchableOpacity style={styles.navButton}>
           <Ionicons name="home" size={28} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('LearningRoadmap')}>
           <MaterialCommunityIcons name="file-document-outline" size={28} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} > 
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Account')}>
           <Ionicons name="person" size={28} color="black" />
         </TouchableOpacity>
       </View>
@@ -73,7 +77,6 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
 const styles = StyleSheet.create({
   container: {
-    top: 28,
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -97,8 +100,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginRight: 10,
   },
-
-  // chuông thông báo
   notificationButton: {
     position: 'relative',
   },
@@ -134,8 +135,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
   },
+  languageButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    backgroundColor: '#000',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  languageButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
   bottomNavigation: {
-    top: -30,
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
