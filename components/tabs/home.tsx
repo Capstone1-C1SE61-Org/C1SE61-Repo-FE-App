@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'r
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 // import { createDrawerNavigator } from '@react-navigation/drawer';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 interface Language {
   name: string;
@@ -31,7 +32,7 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('navlist')}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Menu')}>
           <Ionicons name="menu" size={24} color="black"/>
         </TouchableOpacity>
         <TextInput
@@ -39,6 +40,9 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
           placeholder="Search..."
           placeholderTextColor="#999"
         />
+        <TouchableOpacity style={styles.searchButton}>
+          <Ionicons name="search" size={24} color="black" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('Notification')}>
           <Ionicons name="notifications-outline" size={24} color="black" />
           <View style={styles.notificationBadge}>
@@ -55,7 +59,7 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
         contentContainerStyle={styles.languageList}
       />
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navButton}>
           <Ionicons name="home" size={28} color="black" />
@@ -66,14 +70,14 @@ const navigation = useNavigation<NavigationProp<ParamListBase>>();
         <TouchableOpacity style={styles.navButton} > 
           <Ionicons name="person" size={28} color="black" />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    top: 28,
+    top: 8,
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -96,6 +100,12 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
     marginRight: 10,
+
+  },
+  searchButton: {
+    flexDirection: 'row-reverse',
+    marginRight: 15,
+    marginLeft: -40,
   },
 
   // chuông thông báo

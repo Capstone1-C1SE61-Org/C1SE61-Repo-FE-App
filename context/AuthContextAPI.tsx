@@ -6,6 +6,7 @@ interface AuthProps {
   authState?: {
     token: string | null;
     authenticated: boolean | null;
+    userData?: any;
   };
   onRegister?: (username: string, password: string) => Promise<any>;
   onLogin?: (username: string, password: string) => Promise<any>;
@@ -13,7 +14,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = 'my_jwt';
-export const API_ADDRESS = "http://172.26.66.18:8080";
+export const API_ADDRESS = "http://192.168.0.101:8080";
 export const API_URL = `${API_ADDRESS}/api/v1`
 
 const AuthContext = createContext<AuthProps>({});
@@ -70,9 +71,11 @@ export const AuthProvider = ({ children }: any) => {
   const [authState, setAuthState] = useState<{
     token: string | null;
     authenticated: boolean | null;
+    userData?: any;
   }>({
     token: null,
     authenticated: null,
+    userData: null,
   });
 
   useEffect(() => {
@@ -114,11 +117,29 @@ export const AuthProvider = ({ children }: any) => {
       console.log("Starting login request", { username, password });
 
       let result;
-      let token;
+      let token, userData;
 
-      result = await axiosInstance.post('/public/login', { username, password });
-      console.log('login response:', result);
-      token = result.data.token;
+      // result = await axiosInstance.post('/public/login', { username, password });
+      // console.log('login response:', result);
+      // token = result.data.user.token;
+
+
+      // result = await axiosInstance.post('/public/login', { username, password });
+      //   console.log('login response:',result);
+      //   token = result.data.token;
+      //   userData = result.data.data;
+
+      try {
+        result = await axiosInstance.post('/public/login', { username, password });
+        console.log('login response:',result);
+        token = result.data.user.token;
+        userData = result.data.roles;
+    } catch (error) {
+        result = await axiosInstance.post('/public/login', { username, password });
+        console.log('Student login response:', result);
+        token = result.data.data.token;
+        userData = result.data.data;
+    }
 
       if (!token) {
         throw new Error("No token found");
@@ -129,7 +150,8 @@ export const AuthProvider = ({ children }: any) => {
       setAuthState(prevState => ({
         ...prevState,
         token: token,
-        authenticated: true
+        authenticated: true,
+        userData: userData,
       }));
 
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -151,7 +173,8 @@ export const AuthProvider = ({ children }: any) => {
         setAuthState(prevState => ({
             ...prevState,
             token: null,
-            authenticated: false
+            authenticated: false,
+            userData: null,
         }));
     } catch (error) {
         console.error("Logout error: ", error); 

@@ -72,7 +72,7 @@ const LoginScreen = () => {
           <Text style={styles.signInButtonText}>ĐĂNG NHẬP</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('forgotpass')}>
           <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
         </TouchableOpacity>
 

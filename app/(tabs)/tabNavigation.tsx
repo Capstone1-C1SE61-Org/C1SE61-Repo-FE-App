@@ -1,9 +1,11 @@
 import Account from "@/components/tabs/account";
-import Navlist from "@/components/tabs/navlist";
+import Menu from "@/components/tabs/Menu";
 import Notification from "@/components/tabs/Notification";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeTabs from "@/components/tabs/home";
+import Blog from "@/components/screens/blog";
+
 
 const Tab = createBottomTabNavigator();
 
@@ -33,10 +35,14 @@ export default function TabLayout() {
                 tabBarInactiveTintColor: 'gray',
             })}
         >
-            <Tab.Screen name="Home" component={HomeTabs} />
-            <Tab.Screen name="Menu" component={Navlist} />
+            <Tab.Screen name="Home" component={HomeTabs} 
+            options={{
+                headerShown:false
+            }}
+            />
             <Tab.Screen name="Notification" component={Notification} />
             <Tab.Screen name="Account" component={Account} />
+            <Tab.Screen name="Menu" component={Menu} />
         </Tab.Navigator>
         // </NavigationContainer>
     );

@@ -10,10 +10,10 @@ import LoginScreen from '../login';
 
 const Stack = createStackNavigator();
 
-export default function HomeStackNav() {
+export default function HomeStackNavAdmin() {
     return (
      <Stack.Navigator>
-            <Stack.Screen name="Wellcome" component={Wellcome} options={{ headerShown: false }}/>
+            <Stack.Screen name="Wellcome" component={Wellcome}  options={{ headerShown: false }}/>
             <Stack.Screen name="SignUp" component={SignUpScreen} />
             <Stack.Screen name="forgotpass" component={Forgotpassword} />
             <Stack.Screen
@@ -41,12 +41,6 @@ export default function HomeStackNav() {
                 headerShown:false
             }}
             />
-        {/* <Stack.Screen name='wellcome' component={wellcome}
-        options={{
-            headerShown:false
-        }}
-        /> */}
-
      </Stack.Navigator>
     )
 }
