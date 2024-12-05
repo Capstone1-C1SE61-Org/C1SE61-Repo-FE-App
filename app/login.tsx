@@ -26,25 +26,18 @@ const LoginScreen = () => {
 
   // Đổi tên hàm để không bị trùng với tên component
   const handleLogin = async () => {
-
-    const result = await onLogin!(username, password);
-    if (result && result.error) {
-      alert(result.msg);
+    if (!username || !password) {
+      Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
+      return;
     }
 
-    // if (!username || !password) {
-    //   Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
-    //   return;
-    // }
+    const result = await onLogin!(username, password);
 
-    // const result = await onLogin!(username, password);
-
-    // if (result && result.error) {
-    //   Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-    // } else {
-    //   navigation.navigate("home");
-    // }
-
+    if (result && result.error) {
+      Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
+    } else {
+      navigation.navigate("home");
+    }
   };
 
   return (

@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: any) => {
 
       result = await axiosInstance.post('/public/login', { username, password });
       console.log('login response:', result);
-      token = result.data.user.token;
+      token = result.data.token;
 
       if (!token) {
         throw new Error("No token found");
