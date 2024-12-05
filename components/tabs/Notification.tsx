@@ -17,14 +17,14 @@ const Notification = () => {
         id: '1',
         message: 'This is the first notification message.',
         time: '10:00 AM',
-        avatar: require('../../assets/images/logo/P.png'),
+        avatar: require('../../assets/img/P.png'),
         name: 'John Doe',
       },
       {
         id: '2',
         message: 'This is another notification message.',
         time: '11:15 AM',
-        avatar: require('../../assets/images/logo/P.png'),
+        avatar: require('../../assets/img/P.png'),
         name: 'Jane Smith',
       },
       // ... Add more messages as needed
