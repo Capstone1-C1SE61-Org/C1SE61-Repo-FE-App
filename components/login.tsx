@@ -1,3 +1,32 @@
+// import React, { useState } from 'react';
+// import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+// import AntDesign from '@expo/vector-icons/AntDesign';
+// import { Entypo, Feather } from '@expo/vector-icons';
+// import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+// import forgotpassword from './forgotpassword';
+
+// const LoginScreen = () => {
+//   const [fullName, setFullName] = useState('');
+//   const [password, setPassword] = useState('');
+  
+//   // Sử dụng useNavigation để lấy navigation
+//   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+//   // Đổi tên hàm để không bị trùng với tên component
+//   const handleLogin = () => {
+//     if (!fullName || !password) {
+//       Alert.alert('Please fill out all fields');
+//       return;
+//     }
+
+//     if (fullName === 'admin' && password === 'admin') {
+//       // Điều hướng đến màn hình "home"
+//       navigation.navigate('home');
+//     } else {
+//       Alert.alert('Invalid credentials, please try again.');
+//     }
+//   };
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -5,11 +34,11 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import axios from 'axios'; // Import axios
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
-import { API_URL, useAuth } from '@/context/AuthContextAPI';
+import { API_URL, useAuth } from '../API/AuthContextAPI';
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('123456');
   const { onLogin } = useAuth();
 
   useEffect(() => {
@@ -43,14 +72,14 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Đăng Nhập</Text>
+        <Text style={styles.headerText}>LogIn</Text>
       </View>
 
       <View style={styles.inputContainer}>
         <View style={styles.inputWrapper}>
           <AntDesign name="user" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Tên tài khoản"
+            placeholder="Full Name"
             style={styles.input}
             value={username}
             onChangeText={setUsername}
@@ -60,7 +89,7 @@ const LoginScreen = () => {
         <View style={styles.inputWrapper}>
           <Feather name="lock" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Mật khẩu"
+            placeholder="Password"
             style={styles.input}
             secureTextEntry
             value={password}
@@ -69,24 +98,15 @@ const LoginScreen = () => {
         </View>
 
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
-          <Text style={styles.signInButtonText}>ĐĂNG NHẬP</Text>
+          <Text style={styles.signInButtonText}>LOGIN</Text>
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+          <Text style={styles.forgotPasswordText} onPress={() => navigation.navigate("Forgotpassword")}>Forgot Password?</Text>
         </TouchableOpacity>
-
-        <View style={styles.SignUpText}>
-          <Text>
-            <Text style={[styles.loginText, { color: 'blue' }]}>Đã có tài khoản? </Text>
-          </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.loginBoxText}>Đăng Ký</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
-      <Text style={styles.orText}>Hoặc kết nối bằng</Text>
+      <Text style={styles.orText}>Or connect using</Text>
 
       <View style={styles.socialContainer}>
         <TouchableOpacity style={styles.socialButton}>
@@ -105,7 +125,6 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    top: 100,
     flex: 1,
     backgroundColor: '#F0F0F0',
     alignItems: 'center',
@@ -156,28 +175,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  SignUpText: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '99%',
-  },
-  loginText: {
+  forgotPasswordText: {
     color: '#6a4ee4',
     textAlign: 'center',
     marginVertical: 10,
-  },
-  loginBoxText: {
-    color: '#CD5555',
-    textAlign: 'center',
-    marginVertical: 10,
-    textDecorationLine: 'underline',
-  },
-  forgotPasswordText: {
-    color: '#00CDCD',
-    textAlign: 'center',
-    marginVertical: 10,
-    textDecorationLine: 'underline',
   },
   orText: {
     fontSize: 16,

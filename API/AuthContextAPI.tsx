@@ -1,3 +1,4 @@
+import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
@@ -13,7 +14,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = 'my_jwt';
-export const API_ADDRESS = "http://172.26.66.18:8080";
+export const API_ADDRESS = "http://192.168.0.102:8080"; // nhớ thay đổi địa chỉ
 export const API_URL = `${API_ADDRESS}/api/v1`
 
 const AuthContext = createContext<AuthProps>({});
