@@ -16,23 +16,19 @@ import Setting from '../../components/screens/settings';
 import Blog from '../../components/screens/blog';
 import LearningRoadmap from '../../components/tabs/learningroadmap';
 import TermsAndPolicies from '../../components/screens/terms';
+import HomeInstructor from '../../components/Instructor/homeinstructor';
 
 
 function Wellcome(props: any) {
   const { navigation } = props;
   return (
-      <View>
-            <View>
-              <Text>logo</Text>
-            </View>
-            <View>
-              <Text>Welcome to P3L</Text>
-              <Button title='SignUp'
-                onPress={() => navigation.navigate("SignUp")} />
-              <Button title='Login'
-                onPress={() => navigation.navigate("Login")} />
-            </View>
-      </View>
+    <View>
+      <Text style={{ fontSize: 40, alignItems: 'center', justifyContent: 'center' }}>Sochidev</Text>
+      <Button title='SignUp'
+        onPress={() => navigation.navigate("SignUp")} />
+      <Button title='Login'
+        onPress={() => navigation.navigate("Login")} />
+    </View>
   );
 }
 
@@ -64,7 +60,13 @@ function App() {
           options={{ title: "quên mật khẩu" }}
         />
         <Stack.Screen
-          name="home"
+          name="homeinstructor"
+          component={HomeInstructor}
+          // options={{ headerShown: false }}
+          options={{title: 'hometag'}}
+        />
+        <Stack.Screen
+          name="homecustomer"
           component={HomeTabs}
           options={{ headerShown: false }}
         />
