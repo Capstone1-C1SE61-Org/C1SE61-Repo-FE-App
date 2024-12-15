@@ -1,28 +1,29 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-// Đổi `Icon` thành `AntDesign`, `FontAwesome`, hoặc một trong các bộ icon bạn đã import
-import { FontAwesome} from '@expo/vector-icons'; 
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../API/AuthContextAPI'; // Đảm bảo đường dẫn đúng
 
 function NavList() {
-  // Sử dụng useNavigation để lấy navigation
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  // Function to handle logout
+  const { onLogout } = useAuth(); // Lấy hàm onLogout từ AuthProvider
+
   const handleLogout = async () => {
     try {
-      // Remove the token and other user data
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('userInfo');
-
-      // Redirect to login screen or any other initial screen
-      navigation.navigate('Login');  // Replace 'Login' with the appropriate route name
+      // Gọi hàm onLogout từ AuthProvider
+      if (onLogout) {
+        await onLogout();
+        // Điều hướng về màn hình Login sau khi logout
+        navigation.navigate('Login');
+      } else {
+        console.error('Logout function is not available');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to log out. Please try again.');
       console.error('Logout error:', error);
     }
   };
+
   return (
     <View style={styles.container}>
       {/* Close Icon */}
@@ -60,7 +61,7 @@ function NavList() {
         <MenuItem
           icon="home"
           label="Exit"
-          onPress={handleLogout}
+          onPress={handleLogout} // Gọi hàm handleLogout khi người dùng chọn "Exit"
         />
       </View>
     </View>
@@ -79,7 +80,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, onPress }) => (
     <Text style={styles.menuText}>{label}</Text>
   </TouchableOpacity>
 );
-  
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

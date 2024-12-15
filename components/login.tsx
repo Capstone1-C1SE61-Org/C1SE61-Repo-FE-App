@@ -37,37 +37,72 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Import 
 import { API_URL, useAuth } from '../API/AuthContextAPI';
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('admin');
+  
+  // const [username, setUsername] = useState('buitrang');
+  // const [password, setPassword] = useState('123456');
+  
+  const [username, setUsername] = useState('hoanghaiyen');
   const [password, setPassword] = useState('123456');
+  // customer
+
+
   const { onLogin } = useAuth();
 
   useEffect(() => {
     const testCall = async () => {
-      const result = await axios.post(`${API_URL}/public/login`);
-
-      console.log("File: login.tsx:19 ~ testCall ~ result:", result);
+      try {
+        const result = await axios.post(`${API_URL}/public/login`);
+        console.log("File: login.tsx:19 ~ testCall ~ result:", result);
+      } catch (error) {
+        console.error("Error during testCall:", error);
+      }
     };
     testCall();
-  }, [])
+  }, []);
 
-  // Sử dụng useNavigation để lấy navigation
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  // Đổi tên hàm để không bị trùng với tên component
   const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
       return;
     }
 
-    const result = await onLogin!(username, password);
+    try {
+      const result = await onLogin!(username, password);
 
-    if (result && result.error) {
-      Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-    } else {
-      navigation.navigate("home");
+      if (result && result.error) {
+        Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
+        return;
+      }
+
+      const { roles } = result;
+
+      // Kiểm tra roles có tồn tại và là một mảng
+      if (!roles || !Array.isArray(roles)) {
+        Alert.alert("Lỗi", "Dữ liệu vai trò không hợp lệ");
+        return;
+      }
+
+      // Lưu trữ username để sử dụng sau này
+      await AsyncStorage.setItem('username', username);
+
+      // Kiểm tra vai trò
+      if (roles.includes('ROLE_INSTRUCTOR')) {
+        navigation.navigate('homeinstructor');
+        console.log("username", username,"role", roles);
+      } else if (roles.includes('ROLE_CUSTOMER')) {
+        navigation.navigate('homecustomer');
+        console.log("username", username,"role", roles);
+      } else {
+        Alert.alert("Lỗi", "Vai trò không hợp lệ");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi, vui lòng thử lại sau");
     }
   };
+
 
   return (
     <View style={styles.container}>
