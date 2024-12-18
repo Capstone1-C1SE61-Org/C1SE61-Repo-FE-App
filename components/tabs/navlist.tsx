@@ -13,6 +13,8 @@ function NavList() {
       // Gọi hàm onLogout từ AuthProvider
       if (onLogout) {
         await onLogout();
+        console.log('Logged out successfully');
+        
         // Điều hướng về màn hình Login sau khi logout
         navigation.navigate('Login');
       } else {

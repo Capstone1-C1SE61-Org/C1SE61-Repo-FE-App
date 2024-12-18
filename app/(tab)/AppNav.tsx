@@ -126,12 +126,12 @@ function App() {
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ title: "Đăng ký" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ title: "Đăng nhập" }}
+          options={{ headerShown: false }}
         />
           <Stack.Screen
           name="Forgotpassword"

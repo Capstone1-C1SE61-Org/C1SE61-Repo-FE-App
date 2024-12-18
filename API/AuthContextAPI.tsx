@@ -9,13 +9,20 @@ interface AuthProps {
     userData?: string | null;
     roles?: string[] | null;
   };
-  onRegister?: (username: string, password: string) => Promise<any>;
+  onRegister?: (
+    name: string,
+    username: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => Promise<any>;
   onLogin?: (username: string, password: string) => Promise<any>;
   onLogout?: () => Promise<void>;
 }
 
+
 const TOKEN_KEY = "my_jwt";
-export const API_ADDRESS = "http://192.168.1.20:8080"; // nhớ thay đổi địa chỉ
+export const API_ADDRESS = "http://192.168.0.102:8080"; // nhớ thay đổi địa chỉ
 export const API_URL = `${API_ADDRESS}/api/v1`;
 
 const AuthContext = createContext<AuthProps>({});
@@ -116,9 +123,21 @@ export const AuthProvider = ({ children }: any) => {
     loadToken();
   }, []);
 
-  const register = async (username: string, password: string) => {
+  const register = async (
+    name: string,
+    username: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => {
     try {
-      const response = await axiosInstance.post(`/users`, { username, password });
+      const response = await axiosInstance.post(`/public/signup`, {
+        name,
+        username,
+        email,
+        phone,
+        password,
+      });
       console.log("Registration successful:", response.data);
       return response.data;
     } catch (error: any) {
@@ -126,6 +145,7 @@ export const AuthProvider = ({ children }: any) => {
       throw new Error(error.response?.data?.message || "Registration failed");
     }
   };
+  
 
   const login = async (username: string, password: string) => {
     try {

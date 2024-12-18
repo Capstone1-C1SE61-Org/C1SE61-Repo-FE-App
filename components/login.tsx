@@ -1,108 +1,106 @@
-// import React, { useState } from 'react';
-// import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-// import AntDesign from '@expo/vector-icons/AntDesign';
-// import { Entypo, Feather } from '@expo/vector-icons';
-// import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-// import forgotpassword from './forgotpassword';
-
-// const LoginScreen = () => {
-//   const [fullName, setFullName] = useState('');
-//   const [password, setPassword] = useState('');
-  
-//   // Sử dụng useNavigation để lấy navigation
-//   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-
-//   // Đổi tên hàm để không bị trùng với tên component
-//   const handleLogin = () => {
-//     if (!fullName || !password) {
-//       Alert.alert('Please fill out all fields');
-//       return;
-//     }
-
-//     if (fullName === 'admin' && password === 'admin') {
-//       // Điều hướng đến màn hình "home"
-//       navigation.navigate('home');
-//     } else {
-//       Alert.alert('Invalid credentials, please try again.');
-//     }
-//   };
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import axios from 'axios'; // Import axios
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
-import { API_URL, useAuth } from '../API/AuthContextAPI';
+import forgotpassword from './forgotpassword';
 
 const LoginScreen = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   
-  // const [username, setUsername] = useState('buitrang');
-  // const [password, setPassword] = useState('123456');
-  
-  const [username, setUsername] = useState('hoanghaiyen');
-  const [password, setPassword] = useState('123456');
-  // customer
-
-
-  const { onLogin } = useAuth();
-
-  useEffect(() => {
-    const testCall = async () => {
-      try {
-        const result = await axios.post(`${API_URL}/public/login`);
-        console.log("File: login.tsx:19 ~ testCall ~ result:", result);
-      } catch (error) {
-        console.error("Error during testCall:", error);
-      }
-    };
-    testCall();
-  }, []);
-
+  // Sử dụng useNavigation để lấy navigation
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  const handleLogin = async () => {
+  // Đổi tên hàm để không bị trùng với tên component
+  const handleLogin = () => {
     if (!username || !password) {
-      Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
+      Alert.alert('Please fill out all fields');
       return;
     }
 
-    try {
-      const result = await onLogin!(username, password);
-
-      if (result && result.error) {
-        Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-        return;
-      }
-
-      const { roles } = result;
-
-      // Kiểm tra roles có tồn tại và là một mảng
-      if (!roles || !Array.isArray(roles)) {
-        Alert.alert("Lỗi", "Dữ liệu vai trò không hợp lệ");
-        return;
-      }
-
-      // Lưu trữ username để sử dụng sau này
-      await AsyncStorage.setItem('username', username);
-
-      // Kiểm tra vai trò
-      if (roles.includes('ROLE_INSTRUCTOR')) {
-        navigation.navigate('homeinstructor');
-        console.log("username", username,"role", roles);
-      } else if (roles.includes('ROLE_CUSTOMER')) {
-        navigation.navigate('homecustomer');
-        console.log("username", username,"role", roles);
-      } else {
-        Alert.alert("Lỗi", "Vai trò không hợp lệ");
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
-      Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi, vui lòng thử lại sau");
+    if (username === 'admin' && password === 'admin') {
+      // Điều hướng đến màn hình "home"
+      navigation.navigate('home');
+    } else {
+      Alert.alert('Invalid credentials, please try again.');
     }
   };
 
+// import React, { useEffect, useState } from 'react';
+// import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+// import AntDesign from '@expo/vector-icons/AntDesign';
+// import { Entypo, Feather } from '@expo/vector-icons';
+// import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+// import axios from 'axios'; // Import axios
+// import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+// import { API_URL, useAuth } from '../API/AuthContextAPI';
+
+// const LoginScreen = () => {
+  
+//   // const [username, setUsername] = useState('buitrang');
+//   // const [password, setPassword] = useState('123456');
+  
+//   const [username, setUsername] = useState('');
+//   const [password, setPassword] = useState('');
+//   // customer
+
+//   const { onLogin } = useAuth();
+
+//   useEffect(() => {
+//     const testCall = async () => {
+//       try {
+//         const result = await axios.post(`${API_URL}/public/login`);
+//         console.log("File: login.tsx:19 ~ testCall ~ result:", result);
+//       } catch (error) {
+//         console.error("Error during testCall:", error);
+//       }
+//     };
+//     testCall();
+//   }, []);
+
+//   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+//   const handleLogin = async () => {
+//     if (!username || !password) {
+//       Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
+//       return;
+//     }
+
+//     try {
+//       const result = await onLogin!(username, password);
+
+//       if (result && result.error) {
+//         Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
+//         return;
+//       }
+
+//       const { roles } = result;
+
+//       // Kiểm tra roles có tồn tại và là một mảng
+//       if (!roles || !Array.isArray(roles)) {
+//         Alert.alert("Lỗi", "Dữ liệu vai trò không hợp lệ");
+//         return;
+//       }
+
+//       // Lưu trữ username để sử dụng sau này
+//       await AsyncStorage.setItem('username', username);
+
+//       // Kiểm tra vai trò
+//       if (roles.includes('ROLE_INSTRUCTOR')) {
+//         navigation.navigate('homeinstructor');
+//         console.log("username", username,"role", roles);
+//       } else if (roles.includes('ROLE_CUSTOMER')) {
+//         navigation.navigate('homecustomer');
+//         console.log("username", username,"role", roles);
+//       } else {
+//         Alert.alert("Lỗi", "Vai trò không hợp lệ");
+//       }
+//     } catch (error) {
+//       console.error("Error during login:", error);
+//       Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi, vui lòng thử lại sau");
+//     }
+//   };
 
   return (
     <View style={styles.container}>
@@ -139,6 +137,10 @@ const LoginScreen = () => {
         <TouchableOpacity>
           <Text style={styles.forgotPasswordText} onPress={() => navigation.navigate("Forgotpassword")}>Forgot Password?</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={styles.forgotPasswordText} onPress={() => navigation.navigate("SignUp")}>Chưa có tài khoản?</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.orText}>Or connect using</Text>
@@ -166,7 +168,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   headerContainer: {
-    marginVertical: 20,
+    marginVertical: 50,
   },
   headerText: {
     fontSize: 32,

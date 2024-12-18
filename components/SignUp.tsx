@@ -2,55 +2,122 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AntDesign from '@expo/vector-icons/build/AntDesign';
 import { Entypo, Feather, FontAwesome } from '@expo/vector-icons';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+import axios from 'axios'; // Import axios
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { API_URL } from '../API/AuthContextAPI';
 
 const SignUpScreen = () => {
-  const [fullName, setFullName] = useState('');
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState(''); // Added username field
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // Added phone field
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
+  const [userType, setUserType] = useState('Thường');
+  const [loading, setLoading] = useState(false); // Loading state
+
+
+  // const handleSignUp = async () => {
+  //   if (!name || !username || !email || !phone || !password || !confirmPassword) {
+  //     Alert.alert('Please fill out all fields');
+  //     return;
+  //   }
+
+  //   if (password !== confirmPassword) {
+  //     Alert.alert('Passwords do not match');
+  //     return;
+  //   }
+
+  //   setLoading(true); // Start loading state
+
+  //   try {
+  //     const response = await fetch('http://192.168.0.102:8080/api/v1/public/signup', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         name,
+  //         username,
+  //         email,
+  //         phone,
+  //         password,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+  //     setLoading(false); // Stop loading state
+
+  //     if (response.ok) {
+  //       Alert.alert('Sign Up Successful!', 'Your account has been created.');
+  //       // Navigate or take additional actions after successful signup
+  //     } else {
+  //       Alert.alert('Sign Up Failed', data.message || 'An error occurred. Please try again.');
+  //     }
+  //   } catch (error) {
+  //     setLoading(false); // Stop loading state
+  //     Alert.alert('Error', 'Unable to sign up. Please try again later.');
+  //   }
+  // };
+ 
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const handleSignUp = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Please fill out all fields');
+    if (!name || !username || !email || !phone || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill out all fields.');
       return;
     }
-
+  
     if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-
-    setLoading(true); // Bắt đầu trạng thái loading
-
+  
+    setLoading(true); // Start loading state
+  
     try {
-      const response = await fetch('http://localhost:8080/api/v1/public/signup', {
+      const response = await fetch(`${API_URL}/public/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullName,
+          name,
+          username,
           email,
+          phone,
           password,
+          userType,
         }),
       });
-
-      const data = await response.json();
-      setLoading(false); // Dừng trạng thái loading
-
+  
+      const data = await response.json(); // Parse the JSON response
+      setLoading(false); // Stop loading state
+  
       if (response.ok) {
-        Alert.alert('Sign Up Successful!', 'Your account has been created.');
-        // Điều hướng hoặc thực hiện thêm hành động sau đăng ký thành công
+        Alert.alert('Success', 'Account created successfully!');
+        // Reset form or navigate to the login screen
+        setName('');
+        setUsername('');
+        setEmail('');
+        setPhone('');
+        setPassword('');
+        setConfirmPassword('');
+        setUserType('Thường');
+        // Navigate or take additional actions after successful signup
+        navigation.navigate('Login');
       } else {
-        Alert.alert('Sign Up Failed', data.message || 'An error occurred. Please try again.');
+        // Show the server error message if available
+        Alert.alert('Error', data.message || 'An error occurred. Please try again.');
       }
     } catch (error) {
-      setLoading(false); // Dừng trạng thái loading
-      Alert.alert('Error', 'Unable to sign up. Please try again later.');
+      setLoading(false); // Stop loading state
+      console.error('Sign-Up Error:', error);
+      Alert.alert('Error', 'Unable to connect to the server. Please try again later.');
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -63,8 +130,18 @@ const SignUpScreen = () => {
           <TextInput
             placeholder="Full Name"
             style={styles.input}
-            value={fullName}
-            onChangeText={setFullName}
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <AntDesign name="user" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Account name"
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
           />
         </View>
 
@@ -76,6 +153,17 @@ const SignUpScreen = () => {
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <FontAwesome name="phone" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Phone"
+            style={styles.input}
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
           />
         </View>
 
@@ -108,6 +196,10 @@ const SignUpScreen = () => {
             <Text style={styles.signUpButtonText}>Sign up</Text>
           )}
         </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={styles.forgotPasswordText} onPress={() => navigation.navigate("Login")}>Đã có tài khoản?</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.orText}>Or connect using</Text>
@@ -138,7 +230,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   headerContainer: {
-    marginVertical: 20,
+    marginVertical: 10,
+    marginTop: 40,
   },
   headerText: {
     fontSize: 32,
@@ -181,6 +274,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  forgotPasswordText: {
+    color: '#6a4ee4',
+    textAlign: 'center',
+    fontSize: 16,
+    marginTop: 10,
   },
   orText: {
     fontSize: 16,
