@@ -2,69 +2,76 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AntDesign from '@expo/vector-icons/build/AntDesign';
 import { Entypo, Feather, FontAwesome } from '@expo/vector-icons';
+import { useAuth } from '../API/AuthContextAPI';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 
 const SignUpScreen = () => {
-  const [fullName, setFullName] = useState('');
+  const { onRegister } = useAuth(); // Lấy hàm register từ context
+  const [username, setUsername] = useState('');
+  const [phone, setPhone]= useState('');
+  const [name, setName]= useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const handleSignUp = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Please fill out all fields');
+    if (!username || !email || !password || !confirmPassword || !name || !phone) {
+      Alert.alert('Error', 'Please fill out all fields.');
       return;
     }
-
+  
     if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-
-    setLoading(true); // Bắt đầu trạng thái loading
-
+  
+    setLoading(true);
+  
     try {
-      const response = await fetch('http://localhost:8080/api/v1/public/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullName,
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-      setLoading(false); // Dừng trạng thái loading
-
-      if (response.ok) {
-        Alert.alert('Sign Up Successful!', 'Your account has been created.');
-        // Điều hướng hoặc thực hiện thêm hành động sau đăng ký thành công
+      const result = await onRegister!(username, name, email, password, phone);
+  
+      setLoading(false);
+  
+      if (result?.error) {
+        Alert.alert('Sign Up Failed', result.msg);
       } else {
-        Alert.alert('Sign Up Failed', data.message || 'An error occurred. Please try again.');
+        Alert.alert('Sign Up Successful', 'Your account has been created.');
+        // Điều hướng sang LoginScreen
+        navigation.navigate('LoginScreen');
       }
     } catch (error) {
-      setLoading(false); // Dừng trạng thái loading
+      setLoading(false);
       Alert.alert('Error', 'Unable to sign up. Please try again later.');
     }
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerText}>Sign Up</Text>
       </View>
+      
 
       <View style={styles.inputContainer}>
+
+      <View style={styles.inputWrapper}>
+          <AntDesign name="user" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Full name"
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
+
         <View style={styles.inputWrapper}>
           <AntDesign name="user" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Full Name"
+            placeholder="User name"
             style={styles.input}
-            value={fullName}
-            onChangeText={setFullName}
+            value={username}
+            onChangeText={setUsername}
           />
         </View>
 
@@ -98,6 +105,16 @@ const SignUpScreen = () => {
             secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <AntDesign  name="phone" size={24} color="black" style={styles.icon} />
+          <TextInput
+            placeholder="Phone number"
+            style={styles.input}
+            value={phone}
+            onChangeText={setPhone}
           />
         </View>
 
