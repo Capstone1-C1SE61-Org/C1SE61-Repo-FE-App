@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, TouchableOpacity, ImageBackground } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignUpScreen from "../../components/SignUp";
@@ -16,23 +16,98 @@ import Setting from '../../components/screens/settings';
 import Blog from '../../components/screens/blog';
 import LearningRoadmap from '../../components/tabs/learningroadmap';
 import TermsAndPolicies from '../../components/screens/terms';
+import HomeInstructor from '../../components/Instructor/homeinstructor';
 
 
-function Wellcome(props: any) {
+function Wellcome(props : any) {
   const { navigation } = props;
+
+  const handleRegister = () => {
+    navigation.navigate('SignUp');
+  };
+
+  const handleLogin = () => {
+    navigation.navigate('Login');
+  };
+
   return (
-      <View>
-            <View>
-              <Text>logo</Text>
-            </View>
-            <View>
-              <Text>Welcome to P3L</Text>
-              <Button title='SignUp'
-                onPress={() => navigation.navigate("SignUp")} />
-              <Button title='Login'
-                onPress={() => navigation.navigate("Login")} />
-            </View>
+    <ImageBackground 
+      source={require('../../assets/img/p3l.png')} 
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+      }}
+    >
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)', // Làm tối hình nền
+          padding: 20,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: 'bold',
+            color: '#fff',
+            textShadowColor: 'black',
+            textShadowOffset: { width: 3, height: 3 },
+            textShadowRadius: 3,
+            marginBottom: 40,
+          }}
+        >
+          Welcome to P3L
+        </Text>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#634a9e',
+            paddingVertical: 15,
+            paddingHorizontal: 40,
+            borderRadius: 25,
+            marginVertical: 10,
+            width: '80%',
+            alignItems: 'center',
+          }}
+          onPress={handleRegister}
+        >
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: 'bold',
+            }}
+          >
+            Đăng ký
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#634a9e',
+            paddingVertical: 15,
+            paddingHorizontal: 40,
+            borderRadius: 25,
+            marginVertical: 10,
+            width: '80%',
+            alignItems: 'center',
+          }}
+          onPress={handleLogin}
+        >
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: 'bold',
+            }}
+          >
+            Đăng nhập
+          </Text>
+        </TouchableOpacity>
       </View>
+    </ImageBackground>
   );
 }
 
@@ -46,17 +121,17 @@ function App() {
         <Stack.Screen
           name="Wellcome"
           component={Wellcome}
-          options={{ title: "Trang chủ" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ title: "Đăng ký" }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ title: "Đăng nhập" }}
+          options={{ headerShown: false }}
         />
           <Stack.Screen
           name="Forgotpassword"
@@ -64,7 +139,13 @@ function App() {
           options={{ title: "quên mật khẩu" }}
         />
         <Stack.Screen
-          name="home"
+          name="homeinstructor"
+          component={HomeInstructor}
+          // options={{ headerShown: false }}
+          options={{title: 'hometag'}}
+        />
+        <Stack.Screen
+          name="homecustomer"
           component={HomeTabs}
           options={{ headerShown: false }}
         />
