@@ -112,7 +112,7 @@ const LoginScreen = () => {
         <View style={styles.inputWrapper}>
           <AntDesign name="user" size={24} color="black" style={styles.icon} />
           <TextInput
-            placeholder="Full Name"
+            placeholder="Account"
             style={styles.input}
             value={username}
             onChangeText={setUsername}
