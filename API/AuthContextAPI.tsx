@@ -14,7 +14,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = 'my_jwt';
-export const API_ADDRESS = "http://172.26.97.194:8080"; // nhớ thay đổi địa chỉ
+export const API_ADDRESS = "http://172.26.108.42:8080"; // nhớ thay đổi địa chỉ
 export const API_URL = `${API_ADDRESS}/api/v1`
 
 const AuthContext = createContext<AuthProps>({});
