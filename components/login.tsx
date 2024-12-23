@@ -71,7 +71,7 @@ const LoginScreen = () => {
         return;
       }
   
-      const { roles, token } = result; // Giả sử token được trả về từ API
+      const { roles, token} = result; // Giả sử token được trả về từ API
   
       // Kiểm tra vai trò và token
       if (!roles || !Array.isArray(roles) || !token) {
@@ -82,7 +82,7 @@ const LoginScreen = () => {
       // Lưu trữ username và token để sử dụng sau này
       await AsyncStorage.setItem('username', username);
       await AsyncStorage.setItem('userToken', token);
-      console.log('Token saved:', token);
+      await AsyncStorage.setItem('roles', JSON.stringify(roles));
   
       // Kiểm tra vai trò
       if (roles.includes('ROLE_INSTRUCTOR')) {
@@ -100,63 +100,6 @@ const LoginScreen = () => {
     }
   };
 
-  // const handleLogin = async () => {
-  //   if (!username || !password) {
-  //     Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
-  //     return;
-  //   }
-  
-  //   setLoading(true);
-  
-  //   try {
-  //     const result = await onLogin!(username, password);
-  
-  //     if (result && result.error) {
-  //       Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
-  //       return;
-  //     }
-  
-  //     const { roles, token } = result;
-  
-  //     if (!roles || !Array.isArray(roles) || !token) {
-  //       Alert.alert("Lỗi", "Dữ liệu vai trò hoặc token không hợp lệ");
-  //       return;
-  //     }
-  
-  //     await AsyncStorage.setItem('username', username);
-  //     await AsyncStorage.setItem('userToken', token);
-  
-  //     console.log("Login successful:", { username, roles, token });
-  
-  //     if (roles.includes('ROLE_INSTRUCTOR')) {
-  //       navigation.navigate('homeinstructor');
-  //     } else if (roles.includes('ROLE_CUSTOMER')) {
-  //       navigation.navigate('homecustomer');
-  //     } else {
-  //       Alert.alert("Lỗi", "Vai trò không hợp lệ");
-  //     }
-  //   } catch (error) {
-  //     // Xử lý error có kiểu 'unknown'
-  //     if (error instanceof Error) {
-  //       // Lỗi thông thường với thuộc tính `message`
-  //       console.error("Unexpected error:", error.message);
-  //       Alert.alert("Đăng nhập thất bại", error.message || "Đã xảy ra lỗi không mong muốn.");
-  //     } else if (typeof error === "object" && error !== null && "response" in error) {
-  //       // Lỗi từ axios hoặc tương tự với `response`
-  //       const axiosError = error as any; // Cast tạm thời để lấy response
-  //       console.error("Error response from server:", axiosError.response.data);
-  //       Alert.alert("Đăng nhập thất bại", axiosError.response.data.message || "Thông tin đăng nhập không chính xác.");
-  //     } else {
-  //       // Lỗi không xác định
-  //       console.error("Unknown error:", error);
-  //       Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  
-  
 
   return (
     <View style={styles.container}>

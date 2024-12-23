@@ -22,10 +22,11 @@ function Account() {
   const [loading, setLoading] = useState(true);
   const { authState } = useAuth();
   const token = authState?.token;
+  const roles = authState?.roles;
 
   const fetchUserData = async () => {
     try {
-      await AsyncStorage.getItem(`${token}`);
+      await AsyncStorage.getItem(`${token} && ${roles}`);
       if (!token) {
         console.error('Token not found');
         return;
@@ -90,6 +91,7 @@ function Account() {
       <Text style={styles.info}>Loại khách hàng: {userData.customerTypeName}</Text>
       <Text style={styles.info}>Tài khoản: {userData.username}</Text>
       <Text style={styles.info}>Email: {userData.accountEmail}</Text>
+      <Text style={styles.info}>Role: {authState?.roles}</Text>
     </ScrollView>
   );
 }
