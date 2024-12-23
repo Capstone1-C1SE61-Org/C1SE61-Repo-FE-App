@@ -1,173 +1,134 @@
-import React from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL, useAuth } from '../../API/AuthContextAPI';
+
+type CustomerData = {
+  customerId: number;
+  customerCode: string;
+  customerName: string;
+  customerPhone: string;
+  customerGender: boolean;
+  dateOfBirth: string;
+  customerAddress: string;
+  customerImg: string;
+  customerTypeName: string;
+  username: string;
+  accountEmail: string;
+};
 
 function Account() {
-  // Dữ liệu giả lập
-  const userCourses = [
-    { id: '1', name: 'React Native Basics', progress: '0%' },
-    { id: '2', name: 'Advanced JavaScript', progress: '0%' },
-  ];
+  const [userData, setUserData] = useState<CustomerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { authState } = useAuth();
+  const token = authState?.token;
 
-  const recentActivities = [
-    { id: '1', activity: 'Completed Quiz 1 in React Native Basics' },
-    { id: '2', activity: 'Started Advanced JavaScript course' },
-  ];
+  const fetchUserData = async () => {
+    try {
+      await AsyncStorage.getItem(`${token}`);
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
 
-  // Data for the whole content (combined sections into one list)
-  const sections = [
-    {
-      type: 'profile', // Type of section: profile, course, activity
-      id: 'profile',
-      data: {
-        username: 'Trung Truong',
-        bio: 'hãy tạo bug cùng mèo tập chơi',
-        avatarUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-        bannerUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-      },
-    },
-    {
-      type: 'courses',
-      id: 'courses',
-      title: 'Khóa học đã tham gia',
-      data: userCourses,
-    },
-    {
-      type: 'activities',
-      id: 'activities',
-      title: 'Hoạt động gần đây',
-      data: recentActivities,
-    },
-  ];
+      const response = await fetch(`${API_URL}/customer/detail`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-  // Render Profile Section
-  const renderProfile = (item: any) => (
-    <View style={styles.profileContainer}>
-      <Image source={{ uri: item.bannerUrl }} style={styles.banner} />
-      <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-      <Text style={styles.username}>{item.username}</Text>
-      <Text style={styles.bio}>{item.bio}</Text>
-    </View>
-  );
-
-  // Render Courses Section
-  const renderCourses = (courses: any) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{courses.title}</Text>
-      {courses.data.map((course: any) => (
-        <View key={course.id} style={styles.courseItem}>
-          <Text style={styles.courseName}>{course.name}</Text>
-          <Text style={styles.courseProgress}>Tiến độ: {course.progress}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  // Render Activities Section
-  const renderActivities = (activities: any) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{activities.title}</Text>
-      {activities.data.map((activity: any) => (
-        <View key={activity.id} style={styles.activityItem}>
-          <Ionicons name="time-outline" size={20} color="#555" />
-          <Text style={styles.activityText}>{activity.activity}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  // Render each section based on the type
-  const renderItem = ({ item }: any) => {
-    switch (item.type) {
-      case 'profile':
-        return renderProfile(item.data);
-      case 'courses':
-        return renderCourses(item);
-      case 'activities':
-        return renderActivities(item);
-      default:
-        return null;
+      const data: CustomerData = await response.json();
+      if (response.ok) {
+        setUserData(data);
+      } else {
+        console.error('Error fetching account info:', data);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Đang tải thông tin...</Text>
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Không thể tải thông tin tài khoản. Vui lòng thử lại.</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList
-      data={sections}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-    />
+    <ScrollView contentContainerStyle={styles.profileContainer}>
+      <Image
+        source={{ uri: `${API_URL}/customer/detail${userData.customerImg}` }} // sau thay đổi api cho avatar
+        style={styles.avatar}
+      />
+      <Text style={styles.username}>{userData.customerName}</Text>
+      <Text style={styles.info}>Mã khách hàng: {userData.customerCode}</Text>
+      <Text style={styles.info}>Số điện thoại: {userData.customerPhone}</Text>
+      <Text style={styles.info}>
+        Giới tính: {userData.customerGender ? 'Nam' : 'Nữ'}
+      </Text>
+      <Text style={styles.info}>Ngày sinh: {userData.dateOfBirth}</Text>
+      <Text style={styles.info}>Địa chỉ: {userData.customerAddress}</Text>
+      <Text style={styles.info}>Loại khách hàng: {userData.customerTypeName}</Text>
+      <Text style={styles.info}>Tài khoản: {userData.username}</Text>
+      <Text style={styles.info}>Email: {userData.accountEmail}</Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
   profileContainer: {
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
-    marginBottom: 10,
-  },
-  banner: {
-    width: '100%',
-    height: 150,
-    marginBottom: 10,
   },
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 50,
-    marginBottom: 10,
-    position: 'absolute',
-    top: 120,
-    left: 25,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 15,
+    borderWidth: 2,
     borderColor: '#ccc',
-    borderWidth: 5,
   },
   username: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-  },
-  bio: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  section: {
-    backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  courseItem: {
-    marginBottom: 10,
-  },
-  courseName: {
+  info: {
     fontSize: 16,
-    fontWeight: '600',
-  },
-  courseProgress: {
-    fontSize: 14,
-    color: '#666',
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  activityText: {
-    marginLeft: 10,
-    fontSize: 14,
     color: '#555',
+    marginBottom: 8,
   },
 });
 
