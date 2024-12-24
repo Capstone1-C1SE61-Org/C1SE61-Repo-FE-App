@@ -31,20 +31,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import axios from 'axios'; // Import axios
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL, useAuth } from '../API/AuthContextAPI';
 
 const LoginScreen = () => {
-  
-  // const [username, setUsername] = useState('buitrang');
-  // const [password, setPassword] = useState('123456');
-  
   const [username, setUsername] = useState('hoanghaiyen');
   const [password, setPassword] = useState('123456');
-  // const [showPassword, setShowPassword] = useState(false);
-  // customer
-
+  const [showPassword, setShowPassword] = useState(false); // Thêm trạng thái này
   const { onLogin } = useAuth();
 
   useEffect(() => {
@@ -62,35 +56,30 @@ const LoginScreen = () => {
       Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
       return;
     }
-  
+
     try {
       const result = await onLogin!(username, password);
-  
+
       if (result && result.error) {
         Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
         return;
       }
-  
-      const { roles, token} = result; // Giả sử token được trả về từ API
-  
-      // Kiểm tra vai trò và token
+
+      const { roles, token } = result;
+
       if (!roles || !Array.isArray(roles) || !token) {
         Alert.alert("Lỗi", "Dữ liệu vai trò hoặc token không hợp lệ");
         return;
       }
-  
-      // Lưu trữ username và token để sử dụng sau này
+
       await AsyncStorage.setItem('username', username);
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('roles', JSON.stringify(roles));
-  
-      // Kiểm tra vai trò
+
       if (roles.includes('ROLE_INSTRUCTOR')) {
         navigation.navigate('homeinstructor');
-        console.log("username", username, "role", roles, "token", token);
       } else if (roles.includes('ROLE_CUSTOMER')) {
         navigation.navigate('homecustomer');
-        console.log("username", username, "role", roles, "token", token);
       } else {
         Alert.alert("Lỗi", "Vai trò không hợp lệ");
       }
@@ -99,7 +88,6 @@ const LoginScreen = () => {
       Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi, vui lòng thử lại sau");
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -123,10 +111,17 @@ const LoginScreen = () => {
           <TextInput
             placeholder="Password"
             style={styles.input}
-            secureTextEntry
+            secureTextEntry={!showPassword} // Sử dụng trạng thái để ẩn/hiển mật khẩu
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            {showPassword ? (
+              <Feather name="eye" size={24} color="black" />
+            ) : (
+              <Feather name="eye-off" size={24} color="black" />
+            )}
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>

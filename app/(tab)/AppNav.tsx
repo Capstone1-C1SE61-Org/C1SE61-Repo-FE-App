@@ -164,7 +164,6 @@ function App() {
           component={Notification}
           options={{ title: "Thông báo" }}
         />
-         
         <Stack.Screen
           name="Account"
           component={Account}

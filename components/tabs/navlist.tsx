@@ -29,7 +29,7 @@ function NavList() {
   return (
     <View style={styles.container}>
       {/* Close Icon */}
-      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('home')}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('homecustomer')}>
         <FontAwesome name="close" size={24} color="#000" />
       </TouchableOpacity>
 
