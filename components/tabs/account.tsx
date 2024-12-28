@@ -45,6 +45,7 @@ function Account() {
       const data: CustomerData = await response.json();
       if (response.ok) {
         setUserData(data);
+        console.log('Fetched account info:', data);
       } else {
         console.error('Error fetching account info:', data);
       }
@@ -54,29 +55,30 @@ function Account() {
   };
 
   const fetchRegisteredCourses = async () => {
-    try {
-      if (!token) {
-        console.error('Token not found');
-        return;
-      }
+    // try {
+    //   if (!token) {
+    //     console.error('Token not found');
+    //     return;
+    //   }
 
-      const response = await fetch(`${API_URL}/customer/courses`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${authState?.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+    //   const response = await fetch(`${API_URL}/customer/courses`, {
+    //     method: 'GET',
+    //     headers: {
+    //       Authorization: `Bearer ${authState?.token}`,
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
 
-      const data: CourseData[] = await response.json();
-      if (response.ok) {
-        setRegisteredCourses(data);
-      } else {
-        console.error('Error fetching courses:', data);
-      }
-    } catch (error) {
-      console.error('Network error:', error);
-    }
+    //   const data: CourseData[] = await response.json();
+    //   if (response.ok) {
+    //     setRegisteredCourses(data);
+    //   } else {
+    //     console.error('Error fetching courses:', data);
+    //   }
+    // } catch (error) {
+    //   console.error('Network error:', error);
+    // }
+    setRegisteredCourses ([]);
   };
 
   const handleEdit = () => {
@@ -111,7 +113,7 @@ function Account() {
       <View style={styles.profileCard}>
         <View style={styles.avatarContainer}>
           <Image
-            source={{ uri: `${API_URL}/customer/detail ${userData.customerImg}` }}
+            source={{ uri: userData.customerImg }}
             style={styles.avatar}
           />
           <TouchableOpacity style={styles.editIcon} onPress={handleEdit}>
@@ -129,9 +131,6 @@ function Account() {
 
         <Text style={styles.infoLabel}>SĐT:</Text>
         <Text style={styles.infoValue}>{userData.customerPhone}</Text>
-
-        <Text style={styles.infoLabel}>Vai trò:</Text>
-        <Text style={styles.infoValue}>{authState?.roles}</Text>
       </View>
 
       <View style={styles.coursesContainer}>

@@ -16,7 +16,9 @@ import Setting from '../../components/screens/settings';
 import Blog from '../../components/screens/blog';
 import LearningRoadmap from '../../components/tabs/learningroadmap';
 import TermsAndPolicies from '../../components/screens/terms';
-import HomeInstructor from '../../components/Instructor/homeinstructor';
+import Cart from '../../components/screens/cart';
+import Gioitheu from '../../components/lessonNN/Cshrap/content';
+import CourseDetails from '../../components/lessonNN/Cshrap/content';
 
 
 function Wellcome(props : any) {
@@ -139,13 +141,7 @@ function App() {
           options={{ title: "quên mật khẩu" }}
         />
         <Stack.Screen
-          name="homeinstructor"
-          component={HomeInstructor}
-          // options={{ headerShown: false }}
-          options={{title: 'hometag'}}
-        />
-        <Stack.Screen
-          name="homecustomer"
+          name="home"
           component={HomeTabs}
           options={{ headerShown: false }}
         />
@@ -199,6 +195,18 @@ function App() {
           component={TermsAndPolicies}
           options={{ title: "Điều khoản & chính sách" }}
         />
+        <Stack.Screen
+          name="Cart"
+          component={Cart}
+          options={{ title: "Giỏ hàng" }}
+        />
+          <Stack.Screen
+          name="CourseDetails"
+          component={CourseDetails}
+          options={{ title: "Giới thiệu C#" }}
+        />
+
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

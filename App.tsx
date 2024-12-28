@@ -1,5 +1,4 @@
-import { View, Text } from 'react-native';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AuthProvider } from "./API/AuthContextAPI";
 import AppNav from "./app/(tab)/AppNav";
 export default function RootLayout() {

@@ -76,10 +76,8 @@ const LoginScreen = () => {
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('roles', JSON.stringify(roles));
 
-      if (roles.includes('ROLE_INSTRUCTOR')) {
-        navigation.navigate('homeinstructor');
-      } else if (roles.includes('ROLE_CUSTOMER')) {
-        navigation.navigate('homecustomer');
+      if (roles.includes('ROLE_CUSTOMER')) {
+        navigation.navigate('home');
       } else {
         Alert.alert("Lỗi", "Vai trò không hợp lệ");
       }
