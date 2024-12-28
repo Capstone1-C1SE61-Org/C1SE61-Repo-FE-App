@@ -1,173 +1,254 @@
-import React from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL, useAuth } from '../../API/AuthContextAPI';
+import { MaterialIcons } from '@expo/vector-icons'; // For edit icon
+
+type CustomerData = {
+  customerId: number;
+  customerName: string;
+  customerPhone: string;
+  customerImg: string;
+  username: string;
+  accountEmail: string;
+};
+
+type CourseData = {
+  courseId: number;
+  courseName: string;
+  courseDescription: string;
+};
 
 function Account() {
-  // Dữ liệu giả lập
-  const userCourses = [
-    { id: '1', name: 'React Native Basics', progress: '0%' },
-    { id: '2', name: 'Advanced JavaScript', progress: '0%' },
-  ];
+  const [userData, setUserData] = useState<CustomerData | null>(null);
+  const [registeredCourses, setRegisteredCourses] = useState<CourseData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { authState } = useAuth();
+  const token = authState?.token;
 
-  const recentActivities = [
-    { id: '1', activity: 'Completed Quiz 1 in React Native Basics' },
-    { id: '2', activity: 'Started Advanced JavaScript course' },
-  ];
+  const fetchUserData = async () => {
+    try {
+      await AsyncStorage.getItem(`${token}`);
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
 
-  // Data for the whole content (combined sections into one list)
-  const sections = [
-    {
-      type: 'profile', // Type of section: profile, course, activity
-      id: 'profile',
-      data: {
-        username: 'Trung Truong',
-        bio: 'hãy tạo bug cùng mèo tập chơi',
-        avatarUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-        bannerUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-      },
-    },
-    {
-      type: 'courses',
-      id: 'courses',
-      title: 'Khóa học đã tham gia',
-      data: userCourses,
-    },
-    {
-      type: 'activities',
-      id: 'activities',
-      title: 'Hoạt động gần đây',
-      data: recentActivities,
-    },
-  ];
+      const response = await fetch(`${API_URL}/customer/detail`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${authState?.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-  // Render Profile Section
-  const renderProfile = (item: any) => (
-    <View style={styles.profileContainer}>
-      <Image source={{ uri: item.bannerUrl }} style={styles.banner} />
-      <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-      <Text style={styles.username}>{item.username}</Text>
-      <Text style={styles.bio}>{item.bio}</Text>
-    </View>
-  );
-
-  // Render Courses Section
-  const renderCourses = (courses: any) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{courses.title}</Text>
-      {courses.data.map((course: any) => (
-        <View key={course.id} style={styles.courseItem}>
-          <Text style={styles.courseName}>{course.name}</Text>
-          <Text style={styles.courseProgress}>Tiến độ: {course.progress}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  // Render Activities Section
-  const renderActivities = (activities: any) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{activities.title}</Text>
-      {activities.data.map((activity: any) => (
-        <View key={activity.id} style={styles.activityItem}>
-          <Ionicons name="time-outline" size={20} color="#555" />
-          <Text style={styles.activityText}>{activity.activity}</Text>
-        </View>
-      ))}
-    </View>
-  );
-
-  // Render each section based on the type
-  const renderItem = ({ item }: any) => {
-    switch (item.type) {
-      case 'profile':
-        return renderProfile(item.data);
-      case 'courses':
-        return renderCourses(item);
-      case 'activities':
-        return renderActivities(item);
-      default:
-        return null;
+      const data: CustomerData = await response.json();
+      if (response.ok) {
+        setUserData(data);
+        console.log('Fetched account info:', data);
+      } else {
+        console.error('Error fetching account info:', data);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
     }
   };
 
+  const fetchRegisteredCourses = async () => {
+    // try {
+    //   if (!token) {
+    //     console.error('Token not found');
+    //     return;
+    //   }
+
+    //   const response = await fetch(`${API_URL}/customer/courses`, {
+    //     method: 'GET',
+    //     headers: {
+    //       Authorization: `Bearer ${authState?.token}`,
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
+
+    //   const data: CourseData[] = await response.json();
+    //   if (response.ok) {
+    //     setRegisteredCourses(data);
+    //   } else {
+    //     console.error('Error fetching courses:', data);
+    //   }
+    // } catch (error) {
+    //   console.error('Network error:', error);
+    // }
+    setRegisteredCourses ([]);
+  };
+
+  const handleEdit = () => {
+    console.log('Edit button pressed');
+    // Future: Navigate to edit screen or trigger edit functionality
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([fetchUserData(), fetchRegisteredCourses()]).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Đang tải thông tin...</Text>
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Không thể tải thông tin tài khoản. Vui lòng thử lại.</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList
-      data={sections}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-    />
+    <ScrollView contentContainerStyle={styles.profileContainer}>
+      <View style={styles.profileCard}>
+        <View style={styles.avatarContainer}>
+          <Image
+            source={{ uri: userData.customerImg }}
+            style={styles.avatar}
+          />
+          <TouchableOpacity style={styles.editIcon} onPress={handleEdit}>
+            <MaterialIcons name="edit" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.username}>{userData.customerName}</Text>
+      </View>
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoLabel}>Tên người dùng:</Text>
+        <Text style={styles.infoValue}>{userData.customerName}</Text>
+
+        <Text style={styles.infoLabel}>Email:</Text>
+        <Text style={styles.infoValue}>{userData.accountEmail}</Text>
+
+        <Text style={styles.infoLabel}>SĐT:</Text>
+        <Text style={styles.infoValue}>{userData.customerPhone}</Text>
+      </View>
+
+      <View style={styles.coursesContainer}>
+        <Text style={styles.sectionTitle}>Khóa học đã đăng ký</Text>
+        {registeredCourses.length > 0 ? (
+          registeredCourses.map(course => (
+            <View key={course.courseId} style={styles.courseCard}>
+              <Text style={styles.courseName}>{course.courseName}</Text>
+              <Text style={styles.courseDescription}>{course.courseDescription}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noCoursesText}>Bạn chưa đăng ký khóa học nào.</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
   profileContainer: {
-    alignItems: 'center',
-    padding: 20,
+    paddingTop: 5,
     backgroundColor: '#fff',
-    marginBottom: 10,
   },
-  banner: {
-    width: '100%',
-    height: 150,
-    marginBottom: 10,
+  profileCard: {
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 3,
+  },
+  avatarContainer: {
+    position: 'relative',
   },
   avatar: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 50,
     marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
+  },
+  editIcon: {
     position: 'absolute',
-    top: 120,
-    left: 25,
-    borderColor: '#ccc',
-    borderWidth: 5,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 4,
+    elevation: 2,
   },
   username: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 16,
-  },
-  bio: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  section: {
-    backgroundColor: '#fff',
-    padding: 15,
     marginBottom: 10,
+  },
+  infoContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 3,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 10,
+  },
+  coursesContainer: {
+    marginTop: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#333',
   },
-  courseItem: {
+  courseCard: {
     marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    elevation: 2,
   },
   courseName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#333',
   },
-  courseProgress: {
+  courseDescription: {
     fontSize: 14,
     color: '#666',
   },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  activityText: {
-    marginLeft: 10,
+  noCoursesText: {
     fontSize: 14,
-    color: '#555',
+    color: '#666',
+    textAlign: 'center',
   },
 });
 

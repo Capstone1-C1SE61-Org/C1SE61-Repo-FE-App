@@ -9,22 +9,39 @@ function NavList() {
   const { onLogout } = useAuth(); // Lấy hàm onLogout từ AuthProvider
 
   const handleLogout = async () => {
-    try {
-      // Gọi hàm onLogout từ AuthProvider
-      if (onLogout) {
-        await onLogout();
-        console.log('Logged out successfully');
-        
-        // Điều hướng về màn hình Login sau khi logout
-        navigation.navigate('Login');
-      } else {
-        console.error('Logout function is not available');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to log out. Please try again.');
-      console.error('Logout error:', error);
-    }
+    Alert.alert(
+      'Xác nhận đăng xuất', // Tiêu đề
+      'Bạn có chắc chắn muốn đăng xuất không?', // Nội dung
+      [
+        {
+          text: 'Hủy', // Nút hủy
+          style: 'cancel',
+        },
+        {
+          text: 'Đồng ý', // Nút xác nhận
+          onPress: async () => {
+            try {
+              // Gọi hàm onLogout từ AuthProvider
+              if (onLogout) {
+                await onLogout();
+                console.log('Logged out successfully');
+  
+                // Điều hướng về màn hình Login sau khi logout
+                navigation.navigate('Login');
+              } else {
+                console.error('Logout function is not available');
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to log out. Please try again.');
+              console.error('Logout error:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: true } // Cho phép hủy khi nhấn bên ngoài Alert
+    );
   };
+  ;
 
   return (
     <View style={styles.container}>
@@ -61,7 +78,7 @@ function NavList() {
           onPress={() => navigation.navigate('Blog')}
         />
         <MenuItem
-          icon="home"
+          icon="arrow-left"
           label="Exit"
           onPress={handleLogout} // Gọi hàm handleLogout khi người dùng chọn "Exit"
         />

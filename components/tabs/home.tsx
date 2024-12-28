@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,55 +6,104 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Image,
+  Alert
 } from 'react-native';
-import {
-  Ionicons,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
-import {useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
+import { API_URL } from '../../API/AuthContextAPI';
 
-interface Language {
-  name: string;
-  description: string;
-  color: string;
-  address: string;
+interface Course {
+  courseId: number;
+  courseName: string;
+  coursePrice: number;
+  image: string;
+  status: boolean;
+  createDate: string;
+  updateDate: string;
+  instructorId: number;
 }
-
-const languages: Language[] = [
-  { name: 'HTML', description: 'The language for building web pages', color: '#9A59FF', address: 'hamC' },
-  { name: 'JAVA', description: 'A Programming Language', color: '#FFDD44', address: 'hamC' },
-  { name: 'CSS', description: 'The language for styling web pages', color: '#33A2FF', address: 'hamC' },
-  { name: 'C#', description: 'A Programming Language', color: '#9A59FF', address: 'hamC' },
-  { name: 'Python', description: 'A Programming Language', color: '#FFDD44', address: 'hamC' },
-];
 
 const HomeTabs = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  // State for managing search input and filtered results
+  // State for managing search input and fetched courses
   const [searchText, setSearchText] = useState('');
-  const [filteredLanguages, setFilteredLanguages] = useState<Language[]>(languages);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Function to filter languages based on the search input
+  // Fetch courses from the API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch(`${API_URL}/course`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          setErrorMessage(errorData.message || 'An error occurred');
+          return;
+        }
+        const data = await response.json();
+        setCourses(data);
+        setFilteredCourses(data); // Initially show all courses
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        setErrorMessage('Failed to fetch courses. Please try again later.');
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Function to filter courses based on the search input
   const handleSearch = () => {
-    const filtered = languages.filter(language => 
-      language.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      language.description.toLowerCase().includes(searchText.toLowerCase())
+    const filtered = courses.filter(course => 
+      course.courseName.toLowerCase().includes(searchText.toLowerCase())
     );
-
-    setFilteredLanguages(filtered);
+    setFilteredCourses(filtered);
   };
 
-  const renderLanguage = ({ item }: { item: Language }) => (
-    <View style={[styles.languageCard, { backgroundColor: item.color }]}>
-      <Text style={styles.languageTitle}>{item.name}</Text>
-      <Text style={styles.languageDescription}>{item.description}</Text>
-      <TouchableOpacity
-        style={styles.languageButton}
-        onPress={() => navigation.navigate(item.address)}
-      >
-        <Text style={styles.languageButtonText}>Learn {item.name}</Text>
-      </TouchableOpacity>
+
+  const handleAddToCart = async () => {
+    try {
+      const response = await fetch(`${API_URL}/cart/add/${courses}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert('Success', 'Course added to cart successfully!');
+        // Chuyển hướng đến trang cart.tsx
+        navigation.navigate('Cart');
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Error', errorData.message || 'Failed to add course to cart.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again later.');
+    }
+  };
+
+  const renderCourse = ({ item }: { item: Course }) => (
+    <View style={styles.courseCard}>
+      <Image source={{ uri: item.image }} style={styles.courseImage} />
+      <Text style={styles.courseTitle}>{item.courseName}</Text>
+      <Text style={styles.coursePrice}>
+        {item.coursePrice === 0 ? 'Free' : `${item.coursePrice.toLocaleString()} VND`}
+      </Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.courseButton}
+          onPress={() => navigation.navigate('CourseDetails', { courseId: item.courseId })}
+        >
+          <Text style={styles.courseButtonText}>Learn More</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cartButton} onPress={handleAddToCart}>
+      <Text style={styles.cartButtonText}>Add to Cart</Text>
+    </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -93,25 +142,28 @@ const HomeTabs = () => {
         >
           <Ionicons name="notifications-outline" size={24} color="black" />
           <View style={styles.notificationBadge}>
-            <Text style={styles.notificationCount}>
-              9+ {/* Dynamic notification count */}
-            </Text>
+            <Text style={styles.notificationCount}>9+</Text>
           </View>
         </TouchableOpacity>
       </View>
 
-      {/* Filtered Language List */}
+      {/* Error Message */}
+      {errorMessage && (
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
+      )}
+
+      {/* Filtered Course List */}
       <FlatList
-        data={filteredLanguages}
-        renderItem={renderLanguage}
-        keyExtractor={(item) => item.name}
-        contentContainerStyle={styles.languageList}
+        data={filteredCourses}
+        renderItem={renderCourse}
+        keyExtractor={(item) => item.courseId.toString()}
+        contentContainerStyle={styles.courseList}
       />
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNavigation}>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="home" size={28} color="black" />
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Cart')}>
+          <Ionicons name="cart" size={28} color="black" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
@@ -185,35 +237,74 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
   },
-  languageList: {
+  errorMessage: {
+    color: 'red',
+    textAlign: 'center',
+    marginVertical: 10,
+    fontSize: 16,
+  },
+  courseList: {
     paddingHorizontal: 20,
     paddingTop: 10,
   },
-  languageCard: {
+  courseCard: {
+    backgroundColor: '#f8f8f8',
     borderRadius: 10,
     paddingVertical: 15,
     paddingHorizontal: 20,
     marginBottom: 10,
-  },
-  languageTitle: {
-    fontSize: 20,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  languageDescription: {
-    fontSize: 14,
-    color: '#fff',
-  },
-  languageButton: {
-    marginTop: 10,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderRadius: 5,
     alignItems: 'center',
   },
-  languageButtonText: {
-    color: '#000',
+  courseImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  courseTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  coursePrice: {
     fontSize: 16,
+    color: '#555',
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+  },
+  courseButton: {
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    flex: 1,
+    marginRight: 5,
+  },
+  cartButton: {
+    backgroundColor: '#28a745',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    flex: 1,
+    marginLeft: 5,
+  },
+  courseButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  cartButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   bottomNavigation: {
     flexDirection: 'row',

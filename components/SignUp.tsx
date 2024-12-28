@@ -16,6 +16,9 @@ const SignUpScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userType, setUserType] = useState('Thường');
   const [loading, setLoading] = useState(false); // Loading state
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
 
   // const handleSignUp = async () => {
@@ -172,21 +175,27 @@ const SignUpScreen = () => {
           <TextInput
             placeholder="Password"
             style={styles.input}
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Feather name={showPassword ? 'eye' : 'eye-off'} size={20} color="black" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputWrapper}>
-          <Feather name="lock" size={20} color="black" style={styles.icon} />
+          <Feather name="lock" size={24} color="black" style={styles.icon} />
           <TextInput
             placeholder="Confirm Password"
             style={styles.input}
-            secureTextEntry
+            secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+            <Feather name={showConfirmPassword ? 'eye' : 'eye-off'} size={20} color="black" />
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
@@ -253,6 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
     paddingHorizontal: 10,
+    justifyContent: 'space-between',
   },
   icon: {
     marginRight: 10,
@@ -296,6 +306,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 50,
   },
+  
 });
 
 export default SignUpScreen;
