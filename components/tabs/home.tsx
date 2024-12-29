@@ -96,13 +96,43 @@ const HomeTabs = () => {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.courseButton}
-          onPress={() => navigation.navigate('CourseDetails', { courseId: item.courseId })}
+          onPress={() => {
+            console.log(`Course Name: ${item.courseName}`); // Debugging log
+            switch (item.courseName.toLowerCase()) {
+              case 'c#':
+                navigation.navigate('CSharpDetails', { courseId: item.courseId });
+                break;
+              case 'c++':
+                navigation.navigate('CppDetails', { courseId: item.courseId });
+                break;
+              case 'java':
+                navigation.navigate('JavaDetails', { courseId: item.courseId });
+                break;
+              case 'python':
+                navigation.navigate('PythonDetails', { courseId: item.courseId });
+                break;
+              case 'html-css':
+                navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
+                break;
+              case 'js':
+                navigation.navigate('JsDetails', { courseId: item.courseId });
+                break;
+              case 'php':
+                navigation.navigate('PhpDetails', { courseId: item.courseId });
+                break;
+              default:
+                Alert.alert(
+                  'Error',
+                  `No details page available for this course: ${item.courseName}`
+                );
+            }
+          }}
         >
           <Text style={styles.courseButtonText}>Learn More</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.cartButton} onPress={handleAddToCart}>
-      <Text style={styles.cartButtonText}>Add to Cart</Text>
-    </TouchableOpacity>
+          <Text style={styles.cartButtonText}>Add to Cart</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -19,6 +19,7 @@ import TermsAndPolicies from '../../components/screens/terms';
 import Cart from '../../components/screens/cart';
 import Gioitheu from '../../components/lessonNN/Cshrap/content';
 import CourseDetails from '../../components/lessonNN/Cshrap/content';
+import EditAccount from '../../components/screens/EditAccount';
 
 
 function Wellcome(props : any) {
@@ -204,6 +205,11 @@ function App() {
           name="CourseDetails"
           component={CourseDetails}
           options={{ title: "Giới thiệu C#" }}
+        />
+        <Stack.Screen
+          name="EditAccount"
+          component={EditAccount}
+          options={{ title: "chỉnh sửa thông tin" }}
         />
 
         

@@ -1,34 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TouchableOpacity, Alert,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL, useAuth } from '../../API/AuthContextAPI';
-import { MaterialIcons } from '@expo/vector-icons'; // For edit icon
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 type CustomerData = {
   customerId: number;
+  customerCode: string;
   customerName: string;
   customerPhone: string;
+  customerGender: boolean;
+  dateOfBirth: string;
+  customerAddress: string;
   customerImg: string;
   username: string;
   accountEmail: string;
 };
 
-type CourseData = {
-  courseId: number;
-  courseName: string;
-  courseDescription: string;
-};
-
 function Account() {
   const [userData, setUserData] = useState<CustomerData | null>(null);
-  const [registeredCourses, setRegisteredCourses] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
   const { authState } = useAuth();
   const token = authState?.token;
+  const roles = authState?.roles;
+  const navigation = useNavigation();
+
+  const updateUserData = (newData: CustomerData) => {
+    setUserData(newData);
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('EditAccount', { userData, updateUserData })}
+        >
+          <Ionicons name="pencil" size={24} color="#333" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, userData]);
 
   const fetchUserData = async () => {
     try {
-      await AsyncStorage.getItem(`${token}`);
+      await AsyncStorage.getItem(`${token} && ${roles}`);
       if (!token) {
         console.error('Token not found');
         return;
@@ -37,7 +57,7 @@ function Account() {
       const response = await fetch(`${API_URL}/customer/detail`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${authState?.token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -45,57 +65,70 @@ function Account() {
       const data: CustomerData = await response.json();
       if (response.ok) {
         setUserData(data);
-        console.log('Fetched account info:', data);
       } else {
         console.error('Error fetching account info:', data);
       }
     } catch (error) {
       console.error('Network error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchRegisteredCourses = async () => {
-    // try {
-    //   if (!token) {
-    //     console.error('Token not found');
-    //     return;
-    //   }
-
-    //   const response = await fetch(`${API_URL}/customer/courses`, {
-    //     method: 'GET',
-    //     headers: {
-    //       Authorization: `Bearer ${authState?.token}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //   });
-
-    //   const data: CourseData[] = await response.json();
-    //   if (response.ok) {
-    //     setRegisteredCourses(data);
-    //   } else {
-    //     console.error('Error fetching courses:', data);
-    //   }
-    // } catch (error) {
-    //   console.error('Network error:', error);
-    // }
-    setRegisteredCourses ([]);
-  };
-
-  const handleEdit = () => {
-    console.log('Edit button pressed');
-    // Future: Navigate to edit screen or trigger edit functionality
-  };
-
   useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchUserData(), fetchRegisteredCourses()]).finally(() => setLoading(false));
+    fetchUserData();
   }, []);
+
+  const handleImageChange = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      const uri = result.uri;
+      const formData = new FormData();
+      formData.append('avatar', {
+        uri: uri,
+        type: 'image/jpeg', // or the correct mime type for the image
+        name: 'avatar.jpg',
+      });
+
+      try {
+        const response = await fetch(`${API_URL}/customer/upload-avatar`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          Alert.alert('Success', 'Avatar updated successfully');
+          // Update user data with new avatar URL
+          setUserData((prevData) => ({
+            ...prevData!,
+            customerImg: data.newAvatarUrl, // Assuming your API returns the new avatar URL
+          }));
+        } else {
+          Alert.alert('Error', 'Failed to update avatar');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        Alert.alert('Error', 'Failed to upload avatar');
+      }
+    }
+  };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Đang tải thông tin...</Text>
+        <ActivityIndicator size="large" color="#007BFF" />
+        <Text style={styles.loadingText}>Đang tải thông tin...</Text>
       </View>
     );
   }
@@ -103,48 +136,28 @@ function Account() {
   if (!userData) {
     return (
       <View style={styles.errorContainer}>
-        <Text>Không thể tải thông tin tài khoản. Vui lòng thử lại.</Text>
+        <Text style={styles.errorText}>Không thể tải thông tin tài khoản. Vui lòng thử lại.</Text>
       </View>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.profileContainer}>
-      <View style={styles.profileCard}>
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{ uri: userData.customerImg }}
-            style={styles.avatar}
-          />
-          <TouchableOpacity style={styles.editIcon} onPress={handleEdit}>
-            <MaterialIcons name="edit" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.username}>{userData.customerName}</Text>
-      </View>
+      <TouchableOpacity onPress={handleImageChange}>
+        <Image
+          source={{ uri: userData.customerImg }}
+          style={styles.avatar}
+        />
+      </TouchableOpacity>
+      <Text style={styles.username}>{userData.customerName}</Text>
       <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Tên người dùng:</Text>
-        <Text style={styles.infoValue}>{userData.customerName}</Text>
-
-        <Text style={styles.infoLabel}>Email:</Text>
-        <Text style={styles.infoValue}>{userData.accountEmail}</Text>
-
-        <Text style={styles.infoLabel}>SĐT:</Text>
-        <Text style={styles.infoValue}>{userData.customerPhone}</Text>
-      </View>
-
-      <View style={styles.coursesContainer}>
-        <Text style={styles.sectionTitle}>Khóa học đã đăng ký</Text>
-        {registeredCourses.length > 0 ? (
-          registeredCourses.map(course => (
-            <View key={course.courseId} style={styles.courseCard}>
-              <Text style={styles.courseName}>{course.courseName}</Text>
-              <Text style={styles.courseDescription}>{course.courseDescription}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noCoursesText}>Bạn chưa đăng ký khóa học nào.</Text>
-        )}
+        <Text style={styles.info}><Text style={styles.label}>Mã khách hàng:</Text> {userData.customerCode}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Số điện thoại:</Text> {userData.customerPhone}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Giới tính:</Text> {userData.customerGender ? 'Nam' : 'Nữ'}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Ngày sinh:</Text> {userData.dateOfBirth}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Địa chỉ:</Text> {userData.customerAddress}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Tài khoản:</Text> {userData.username}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Email:</Text> {userData.accountEmail}</Text>
       </View>
     </ScrollView>
   );
@@ -157,98 +170,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#555',
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
+  errorText: {
+    fontSize: 16,
+    color: '#ff4d4f',
+  },
   profileContainer: {
-    paddingTop: 5,
-    backgroundColor: '#fff',
-  },
-  profileCard: {
     alignItems: 'center',
-    marginBottom: 20,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
     padding: 20,
-    elevation: 3,
-  },
-  avatarContainer: {
-    position: 'relative',
+    backgroundColor: '#fff',
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 15,
     borderWidth: 2,
-    borderColor: '#ddd',
-  },
-  editIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 4,
-    elevation: 2,
+    borderColor: '#007BFF',
   },
   username: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#333',
+    marginBottom: 20,
   },
   infoContainer: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
-    padding: 15,
-    elevation: 3,
+    width: '100%',
+    paddingHorizontal: 15,
   },
-  infoLabel: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 2,
-  },
-  infoValue: {
+  info: {
     fontSize: 16,
-    color: '#333',
+    color: '#555',
     marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 5,
   },
-  coursesContainer: {
-    marginTop: 20,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
-    padding: 15,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  courseCard: {
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 10,
-    elevation: 2,
-  },
-  courseName: {
-    fontSize: 16,
+  label: {
     fontWeight: 'bold',
     color: '#333',
   },
-  courseDescription: {
-    fontSize: 14,
-    color: '#666',
-  },
-  noCoursesText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+  iconButton: {
+    marginRight: 15,
   },
 });
 
