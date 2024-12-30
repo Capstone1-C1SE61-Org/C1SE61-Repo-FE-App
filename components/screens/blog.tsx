@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 
 function Blog() {
   // Type the animation variables as Animated.Value
@@ -42,6 +42,9 @@ function Blog() {
         <Animated.View
           style={[styles.loadingThumb, { transform: [{ scale: animation3 }] }]}
         />
+      </View>
+      <View>
+        <Text>Chưa có cập nhật ....</Text>
       </View>
     </View>
   );

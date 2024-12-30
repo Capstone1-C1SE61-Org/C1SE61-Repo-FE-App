@@ -9,13 +9,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 type CustomerData = {
-  customerId: number;
-  customerCode: string;
   customerName: string;
   customerPhone: string;
-  customerGender: boolean;
-  dateOfBirth: string;
-  customerAddress: string;
   customerImg: string;
   username: string;
   accountEmail: string;
@@ -65,6 +60,7 @@ function Account() {
       const data: CustomerData = await response.json();
       if (response.ok) {
         setUserData(data);
+        console.log('User data fetched successfully:', data);
       } else {
         console.error('Error fetching account info:', data);
       }
@@ -80,22 +76,22 @@ function Account() {
   }, []);
 
   const handleImageChange = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result: ImagePicker.ImagePickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-
-    if (!result.cancelled) {
-      const uri = result.uri;
+  
+    if (!result.canceled) {
+      const uri: string = result.uri;
       const formData = new FormData();
       formData.append('avatar', {
         uri: uri,
         type: 'image/jpeg', // or the correct mime type for the image
         name: 'avatar.jpg',
       });
-
+  
       try {
         const response = await fetch(`${API_URL}/customer/upload-avatar`, {
           method: 'POST',
@@ -105,7 +101,7 @@ function Account() {
           },
           body: formData,
         });
-
+  
         const data = await response.json();
         if (response.ok) {
           Alert.alert('Success', 'Avatar updated successfully');
@@ -151,12 +147,9 @@ function Account() {
       </TouchableOpacity>
       <Text style={styles.username}>{userData.customerName}</Text>
       <View style={styles.infoContainer}>
-        <Text style={styles.info}><Text style={styles.label}>Mã khách hàng:</Text> {userData.customerCode}</Text>
-        <Text style={styles.info}><Text style={styles.label}>Số điện thoại:</Text> {userData.customerPhone}</Text>
-        <Text style={styles.info}><Text style={styles.label}>Giới tính:</Text> {userData.customerGender ? 'Nam' : 'Nữ'}</Text>
-        <Text style={styles.info}><Text style={styles.label}>Ngày sinh:</Text> {userData.dateOfBirth}</Text>
-        <Text style={styles.info}><Text style={styles.label}>Địa chỉ:</Text> {userData.customerAddress}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Họ và Tên:</Text> {userData.customerName}</Text>
         <Text style={styles.info}><Text style={styles.label}>Tài khoản:</Text> {userData.username}</Text>
+        <Text style={styles.info}><Text style={styles.label}>Số điện thoại:</Text> {userData.customerPhone}</Text>
         <Text style={styles.info}><Text style={styles.label}>Email:</Text> {userData.accountEmail}</Text>
       </View>
     </ScrollView>
@@ -168,61 +161,81 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#E8F1F2',
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     color: '#555',
+    fontStyle: 'italic',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FAE5E5',
   },
   errorText: {
     fontSize: 16,
-    color: '#ff4d4f',
+    color: '#D9534F',
+    fontWeight: 'bold',
   },
   profileContainer: {
+    paddingTop: 50,
     alignItems: 'center',
-    padding: 20,
     backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     marginBottom: 15,
-    borderWidth: 2,
-    borderColor: '#007BFF',
+    borderWidth: 4,
+    borderColor: '#ccc',
+    backgroundColor: '#E8F1F2',
   },
   username: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   infoContainer: {
-    width: '100%',
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    marginTop: 20,
+    marginBottom: 300,
+    padding: 15,
   },
   info: {
     fontSize: 16,
     color: '#555',
-    marginBottom: 10,
+    marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#E8E8E8',
     paddingBottom: 5,
+    lineHeight: 22,
   },
   label: {
     fontWeight: 'bold',
-    color: '#333',
+    color: '#444',
   },
   iconButton: {
     marginRight: 15,
+    backgroundColor: '#F5F5F5',
+    padding: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+    
   },
 });
+
 
 export default Account;

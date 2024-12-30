@@ -42,14 +42,16 @@ const Cart = () => {
         }
         const data = await response.json();
         setCartData(data);
+        console.log("Cart fetched successfully:", data); // Add this lin
       } catch (error) {
         console.error("Error fetching cart:", error);
         setErrorMessage("Failed to fetch cart. Please try again later.");
       }
     };
-
+  
     fetchCart();
   }, []);
+  
 
   const renderCartItem = ({ item }: { item: CartDetail }) => (
     <View style={styles.cartItem}>

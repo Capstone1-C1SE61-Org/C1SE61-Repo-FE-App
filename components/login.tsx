@@ -56,28 +56,32 @@ const LoginScreen = () => {
       Alert.alert("Lỗi", "Vui lòng nhập tài khoản và mật khẩu");
       return;
     }
-
+  
     try {
       const result = await onLogin!(username, password);
-
+  
       if (result && result.error) {
         Alert.alert("Đăng nhập thất bại", result.msg || "Thông tin đăng nhập không chính xác");
         return;
       }
-
+  
       const { roles, token } = result;
-
+  
       if (!roles || !Array.isArray(roles) || !token) {
         Alert.alert("Lỗi", "Dữ liệu vai trò hoặc token không hợp lệ");
         return;
       }
-
+  
       await AsyncStorage.setItem('username', username);
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('roles', JSON.stringify(roles));
-
+  
       if (roles.includes('ROLE_CUSTOMER')) {
-        navigation.navigate('home');
+        // Reset điều hướng để xóa lịch sử của màn hình đăng nhập
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'home' }], // Thay 'home' bằng tên màn hình chính của bạn
+        });
       } else {
         Alert.alert("Lỗi", "Vai trò không hợp lệ");
       }
@@ -86,6 +90,7 @@ const LoginScreen = () => {
       Alert.alert("Đăng nhập thất bại", "Đã xảy ra lỗi, vui lòng thử lại sau");
     }
   };
+  
 
   return (
     <View style={styles.container}>

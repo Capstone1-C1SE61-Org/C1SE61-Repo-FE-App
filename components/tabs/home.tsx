@@ -12,6 +12,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import { API_URL } from '../../API/AuthContextAPI';
+import { getItem } from 'expo-secure-store';
 
 interface Course {
   courseId: number;
@@ -27,13 +28,11 @@ interface Course {
 const HomeTabs = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
-  // State for managing search input and fetched courses
   const [searchText, setSearchText] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch courses from the API
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -45,7 +44,7 @@ const HomeTabs = () => {
         }
         const data = await response.json();
         setCourses(data);
-        setFilteredCourses(data); // Initially show all courses
+        setFilteredCourses(data);
       } catch (error) {
         console.error('Error fetching courses:', error);
         setErrorMessage('Failed to fetch courses. Please try again later.');
@@ -55,36 +54,60 @@ const HomeTabs = () => {
     fetchCourses();
   }, []);
 
-  // Function to filter courses based on the search input
-  const handleSearch = () => {
-    const filtered = courses.filter(course => 
-      course.courseName.toLowerCase().includes(searchText.toLowerCase())
-    );
-    setFilteredCourses(filtered);
-  };
-
-
-  const handleAddToCart = async () => {
+  const handleSearch = async () => {
     try {
-      const response = await fetch(`${API_URL}/cart/add/${courses}`, {
-        method: 'POST',
+      // Gọi API với từ khóa tìm kiếm
+      const response = await fetch(`${API_URL}/search`, {
+        method: 'GET', 
         headers: {
           'Content-Type': 'application/json',
         },
       });
+  
+      // Kiểm tra xem API trả về thành công không
+      if (!response.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+  
+      // Lấy dữ liệu JSON từ phản hồi
+      const data = await response.json();
+  
+      // Cập nhật danh sách khóa học sau khi tìm kiếm
+      setFilteredCourses(data.results || []); // `results` tùy thuộc vào cấu trúc trả về của API
+    } catch (error) {
+      console.error('Error searching courses:', error);
+      // Xử lý lỗi, ví dụ: hiển thị thông báo cho người dùng
+    }
+  };
+  
 
+  const handleAddToCart = async (courseId: number) => {
+    try {
+      const response = await fetch(`${API_URL}/cart/add/${courseId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+
+        },
+      });
+  
       if (response.ok) {
-        Alert.alert('Success', 'Course added to cart successfully!');
-        // Chuyển hướng đến trang cart.tsx
-        navigation.navigate('Cart');
+        Alert.alert('Success', 'Course added to cart successfully!', [
+          { text: 'Go to Cart', onPress: () => navigation.navigate('Cart') },
+          { text: 'Stay Here' },
+        ]);
       } else {
         const errorData = await response.json();
         Alert.alert('Error', errorData.message || 'Failed to add course to cart.');
       }
     } catch (error) {
+      console.error('Error adding course to cart:', error);
       Alert.alert('Error', 'Something went wrong. Please try again later.');
     }
   };
+  
+  
+  
 
   const renderCourse = ({ item }: { item: Course }) => (
     <View style={styles.courseCard}>
@@ -97,41 +120,51 @@ const HomeTabs = () => {
         <TouchableOpacity
           style={styles.courseButton}
           onPress={() => {
-            console.log(`Course Name: ${item.courseName}`); // Debugging log
-            switch (item.courseName.toLowerCase()) {
-              case 'c#':
+            const lowerCaseName = item.courseName.toLowerCase();
+          
+            switch (true) {
+              case lowerCaseName.includes('c#'):
                 navigation.navigate('CSharpDetails', { courseId: item.courseId });
                 break;
-              case 'c++':
+          
+              case lowerCaseName.includes('c++'):
                 navigation.navigate('CppDetails', { courseId: item.courseId });
                 break;
-              case 'java':
+          
+              case lowerCaseName.includes('java'):
                 navigation.navigate('JavaDetails', { courseId: item.courseId });
                 break;
-              case 'python':
+          
+              case lowerCaseName.includes('python'):
                 navigation.navigate('PythonDetails', { courseId: item.courseId });
                 break;
-              case 'html-css':
+          
+              case lowerCaseName.includes('html') && lowerCaseName.includes('css'):
                 navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
                 break;
-              case 'js':
+          
+              case lowerCaseName.includes('javascript'):
                 navigation.navigate('JsDetails', { courseId: item.courseId });
                 break;
-              case 'php':
+          
+              case lowerCaseName.includes('php'):
                 navigation.navigate('PhpDetails', { courseId: item.courseId });
                 break;
+          
               default:
                 Alert.alert(
                   'Error',
                   `No details page available for this course: ${item.courseName}`
                 );
+                break;
             }
           }}
+          
         >
           <Text style={styles.courseButtonText}>Learn More</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cartButton} onPress={handleAddToCart}>
-          <Text style={styles.cartButtonText}>Add to Cart</Text>
+        <TouchableOpacity style={styles.cartIcon} onPress={() => handleAddToCart(item.courseId)}>
+          <Ionicons name="cart" size={24} color="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -139,7 +172,6 @@ const HomeTabs = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.menuButton}
@@ -148,19 +180,17 @@ const HomeTabs = () => {
           <Ionicons name="menu" size={24} color="black" />
         </TouchableOpacity>
 
-        {/* Search Bar with Icon */}
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
             placeholderTextColor="#999"
             value={searchText}
-            onChangeText={setSearchText} // Update search text as the user types
+            onChangeText={setSearchText}
           />
-          {/* Search Button */}
           <TouchableOpacity
             style={styles.searchButton}
-            onPress={handleSearch} // Trigger the search when button is pressed
+            onPress={handleSearch}
           >
             <Ionicons name="search" size={20} color="#000" />
           </TouchableOpacity>
@@ -177,12 +207,10 @@ const HomeTabs = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Error Message */}
       {errorMessage && (
         <Text style={styles.errorMessage}>{errorMessage}</Text>
       )}
 
-      {/* Filtered Course List */}
       <FlatList
         data={filteredCourses}
         renderItem={renderCourse}
@@ -190,7 +218,6 @@ const HomeTabs = () => {
         contentContainerStyle={styles.courseList}
       />
 
-      {/* Bottom Navigation */}
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Cart')}>
           <Ionicons name="cart" size={28} color="black" />
@@ -316,21 +343,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
-  cartButton: {
+  cartIcon: {
     backgroundColor: '#28a745',
     borderRadius: 5,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    flex: 1,
-    marginLeft: 5,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   courseButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  cartButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

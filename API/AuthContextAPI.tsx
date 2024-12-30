@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 
 // Constants
 const TOKEN_KEY = "my_jwt";
-export const API_ADDRESS = "http://172.26.115.162:8080"; // Đổi bằng biến môi trường nếu cần
+export const API_ADDRESS = "http://192.168.0.101:8080"; // Đổi bằng biến môi trường nếu cần
 export const API_URL = `${API_ADDRESS}/api/v1`;
 
 // Axios instance
