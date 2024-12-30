@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, Button, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignUpScreen from "../../components/SignUp";
@@ -8,7 +8,6 @@ import HomeTabs from '../../components/tabs/home';
 import Navlist from '../../components/tabs/navlist';
 import Notification from '../../components/tabs/Notification';
 import Account from '../../components/tabs/account';
-import hamC from '../../components/lessonNN/java/ham';
 import Forgotpassword from '../../components/forgotpassword';
 import History from '../../components/screens/history';
 import Help from '../../components/screens/help';
@@ -17,8 +16,15 @@ import Blog from '../../components/screens/blog';
 import LearningRoadmap from '../../components/tabs/learningroadmap';
 import TermsAndPolicies from '../../components/screens/terms';
 import Cart from '../../components/screens/cart';
-import Gioitheu from '../../components/lessonNN/Cshrap/content';
-import CourseDetails from '../../components/lessonNN/Cshrap/content';
+import CourseDetails from '../../components/lessonNN/Cshrap/CSharpDetails';
+import EditAccount from '../../components/screens/EditAccount';
+import JavaDetails from '../../components/lessonNN/java/JavaDetails';
+import CSharpDetails from '../../components/lessonNN/Cshrap/CSharpDetails';
+import CppDetails from '../../components/lessonNN/C++/CppDetails';
+import HtmlCssDetails from '../../components/lessonNN/htmlcss/HtmlCssDetails';
+import PhpDetails from '../../components/lessonNN/PHP/PhpDetails';
+import JsDetails from '../../components/lessonNN/JS/JsDetails';
+import PythonDetails from '../../components/lessonNN/Python/PythonDetails';
 
 
 function Wellcome(props : any) {
@@ -166,11 +172,6 @@ function App() {
           options={{ title: "Trang cá nhân" }}
         />
         <Stack.Screen
-          name="hamC"
-          component={hamC}
-          options={{ title: "Lập Trình JavaScript Cơ Bản" }}
-        />
-        <Stack.Screen
           name="History"
           component={History}
           options={{ title: "Khóa học đã đăng ký" }}
@@ -204,6 +205,47 @@ function App() {
           name="CourseDetails"
           component={CourseDetails}
           options={{ title: "Giới thiệu C#" }}
+        />
+        <Stack.Screen
+          name="EditAccount"
+          component={EditAccount}
+          options={{ title: "chỉnh sửa thông tin" }}
+        />
+        <Stack.Screen
+          name="JavaDetails"
+          component={JavaDetails}
+          options={{ title: "Nội dung khóa học Java" }}
+        />
+        <Stack.Screen
+          name="PythonDetails"
+          component={PythonDetails}
+          options={{ title: "Nội dung khóa học Python" }}
+        />
+        <Stack.Screen
+          name="CSharpDetails"
+          component={CSharpDetails}
+          options={{ title: "Nội dung khóa học C#" }}
+        />
+
+        <Stack.Screen
+          name="CppDetails"
+          component={CppDetails}
+          options={{ title: "Nội dung khóa học C++" }}
+        />
+        <Stack.Screen
+          name="HtmlCssDetails"
+          component={HtmlCssDetails}
+          options={{ title: "Nội dung khóa học HTML và CSS" }}
+        />
+        <Stack.Screen
+          name="PhpDetails"
+          component={PhpDetails}
+          options={{ title: "Nội dung khóa học PHP" }}
+        />
+        <Stack.Screen
+          name="JsDetails"
+          component={JsDetails}
+          options={{ title: "Nội dung khóa học Javascript" }}
         />
 
         

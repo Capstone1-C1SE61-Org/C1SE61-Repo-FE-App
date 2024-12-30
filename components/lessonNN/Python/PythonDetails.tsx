@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const CourseDetailsScreen = () =>{
+const PythonDetailsScreen = () =>{
 
   return (
     <View>
-      <Text>Course ID:</Text>
+      <Text>python</Text>
     </View>
   );
 };
 
-export default CourseDetailsScreen;
+export default PythonDetailsScreen;

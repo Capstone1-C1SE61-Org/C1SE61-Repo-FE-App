@@ -1,140 +1,161 @@
-import React from 'react';
-import { View, Text, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, FlatList } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
-const learningRoadmapData = [
-  {
-    title: "1. Tìm hiểu về ngành IT",
-    items: [
-      {
-        name: "Kiến Thức Nhập Môn IT",
-        type: "Miễn phí",
-        description: "Khóa học giúp bạn làm quen với ngành IT, các khái niệm cơ bản và môi trường làm việc.",
-      },
-    ],
-    color: '#FF8A80', // Giữ nguyên màu đỏ nhạt
-  },
-  {
-    title: "2. HTML và CSS",
-    items: [
-      {
-        name: "HTML CSS Pro",
-        type: "1.299.000đ",
-        description: "Khóa học chuyên sâu về HTML và CSS, bao gồm responsive, flexbox và grid layout.",
-      },
-      {
-        name: "Responsive Với Grid System",
-        type: "Miễn phí",
-        description: "Học cách xây dựng giao diện web responsive với Grid System và Bootstrap.",
-      },
-    ],
-    color: '#7E57C2', // Màu xanh dương lai tím
-  },
-  {
-    title: "3. JavaScript",
-    items: [
-      {
-        name: "Lập Trình JavaScript Cơ Bản",
-        type: "Miễn phí",
-        description: "Nắm vững kiến thức cơ bản và cách sử dụng JavaScript trong các dự án thực tế.",
-      },
-      {
-        name: "Lập Trình JavaScript Nâng Cao",
-        type: "Miễn phí",
-        description: "Tìm hiểu chuyên sâu về ES6+, asynchronous programming, và OOP.",
-      },
-    ],
-    color: '#FFA726', // Màu cam lai vàng
-  },
-  {
-    title: "4. Sử dụng Ubuntu/Linux",
-    items: [
-      {
-        name: "Làm việc với Terminal & Ubuntu",
-        type: "Miễn phí",
-        description: "Học cách sử dụng Linux và các lệnh Terminal cơ bản cho lập trình viên.",
-      },
-    ],
-    color: '#37474F', // Màu xanh đậm lai đen
-  },
-];
-
-function LearningRoadmap() {
-  return (
-    <ScrollView style={styles.container}>
-      {learningRoadmapData.map((route, index) => (
-        <View key={index} style={styles.section}>
-          <Text style={styles.sectionTitle}>{route.title}</Text>
-          <FlatList
-            data={route.items}
-            keyExtractor={(item, idx) => `${index}-${idx}`}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <View style={[styles.courseCard, { backgroundColor: route.color }]}>
-                <Text style={styles.courseName}>{item.name}</Text>
-                <Text style={styles.courseDescription}>{item.description}</Text>
-                <Text style={styles.courseType}>{item.type}</Text>
-                <TouchableOpacity style={styles.courseButton}>
-                  <Text style={styles.buttonText}>Xem khóa học</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-        </View>
-      ))}
-    </ScrollView>
-  );
+interface Message {
+  author: string;
+  verified: boolean;
+  title: string;
+  description: string;
+  tag: string;
+  time: string;
+  readTime: string;
+  imageUrl: string;
 }
+
+const LearningRoadmap = () => {
+  const [articles] = useState<Message[]>([
+    {
+      author: 'Sơn Đặng',
+      verified: true,
+      title: 'Hoàng Bảo Trung - Học viên tiêu biểu của F8 tỏa sáng với dự án "AI Powered Learning"',
+      description: 'Trong thời đại công nghệ số 4.0, việc học không còn bó buộc trong những cuốn sách truyền thống...',
+      tag: 'ReactJS',
+      time: '3 tháng trước',
+      readTime: '6 phút đọc',
+      imageUrl: 'https://via.placeholder.com/150',
+    },
+    {
+      author: 'Lý Cao Nguyên',
+      verified: false,
+      title: 'Mình đã làm thế nào để hoàn thành một dự án website chỉ trong 15 ngày',
+      description: 'Xin chào mọi người! Mình là Lý Cao Nguyên, mình đã làm một dự án website front-end...',
+      tag: 'Front-end',
+      time: '6 tháng trước',
+      readTime: '4 phút đọc',
+      imageUrl: 'https://via.placeholder.com/150',
+    },
+    {
+      author: 'Trần Hàng',
+      verified: false,
+      title: 'Mình công khai một dự án web trên GitHub',
+      description: 'Xin chào mọi người! Mình là Trần Hàng, mình công khai một dự án web trên GitHub...',
+      tag: 'Front-end',
+      time: '6 tháng trước',
+      readTime: '4 phút đọc',
+      imageUrl: 'https://via.placeholder.com/150',
+    },
+  ]);
+
+  const renderItem = ({ item }: { item: Message }) => (
+    <View style={styles.card}>
+      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.author}>{item.author}</Text>
+          {item.verified && <FontAwesome name="check-circle" size={16} color="#007BFF" />}
+        </View>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
+        <View style={styles.meta}>
+          <Text style={styles.tag}>{item.tag}</Text>
+          <Text style={styles.metaText}>{item.time}</Text>
+          <Text style={styles.metaText}>{item.readTime}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.heading}>Bài viết nổi bật</Text>
+      <Text style={styles.subheading}>
+        Tổng hợp các bài viết chia sẻ về kinh nghiệm tự học lập trình online và các kỹ thuật lập trình web.
+      </Text>
+      <FlatList
+        data={articles}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 10,
+    backgroundColor: '#f9f9f9',
+    padding: 15,
   },
-  section: {
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  subheading: {
+    fontSize: 14,
+    color: '#666',
     marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
-  },
-  courseCard: {
+  card: {
+    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 15,
+    overflow: 'hidden',
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
-  courseName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+  image: {
+    width: '100%',
+    height: 150,
   },
-  courseDescription: {
-    fontSize: 14,
-    color: '#fff',
-    marginVertical: 5,
+  content: {
+    padding: 15,
   },
-  courseType: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  courseButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-    borderRadius: 8,
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 10,
   },
-  buttonText: {
-    color: '#007bff',
+  author: {
+    fontSize: 14,
     fontWeight: 'bold',
+    color: '#333',
+    marginRight: 5,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 15,
+  },
+  meta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tag: {
+    backgroundColor: '#ff6b6b',
+    color: '#fff',
+    fontSize: 12,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  metaText: {
+    fontSize: 12,
+    color: '#777',
+    marginRight: 10,
   },
 });
 

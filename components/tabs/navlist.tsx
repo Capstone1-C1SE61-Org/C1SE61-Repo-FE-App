@@ -1,56 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import { useAuth } from '../../API/AuthContextAPI'; // Đảm bảo đường dẫn đúng
-
-function NavList() {
+export interface AuthProps {
+  token: string | null; // Token của người dùng
+  onLogout: () => Promise<void>; // Hàm đăng xuất
+  // Thêm các thuộc tính khác nếu cần
+}
+const NavList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const { onLogout } = useAuth(); // Lấy hàm onLogout từ AuthProvider
+  const authContext = useAuth(); // Lấy toàn bộ context
+  const { onLogout } = authContext || {}; // Kiểm tra và giải cấu trúc an toàn
+  const [token, setToken] = useState<string | null>(null);
 
   const handleLogout = async () => {
+    if (!onLogout) {
+      console.error('Logout function is not available in AuthContext.');
+      Alert.alert('Lỗi', 'Không thể thực hiện đăng xuất.');
+      return;
+    }
+
     Alert.alert(
-      'Xác nhận đăng xuất', // Tiêu đề
-      'Bạn có chắc chắn muốn đăng xuất không?', // Nội dung
+      'Xác nhận đăng xuất',
+      'Bạn có chắc chắn muốn đăng xuất không?',
       [
         {
-          text: 'Hủy', // Nút hủy
+          text: 'Hủy',
           style: 'cancel',
         },
         {
-          text: 'Đồng ý', // Nút xác nhận
+          text: 'Đồng ý',
           onPress: async () => {
             try {
-              // Gọi hàm onLogout từ AuthProvider
-              if (onLogout) {
-                await onLogout();
-                console.log('Logged out successfully');
-  
-                // Điều hướng về màn hình Login sau khi logout
-                navigation.navigate('Login');
-              } else {
-                console.error('Logout function is not available');
-              }
+              await onLogout();
+              console.log('Logged out successfully');
+              console.log('Token đã bị xóa:', token);
+              setToken(null);
+              // Reset điều hướng để xóa lịch sử và đưa về màn hình Login
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }], // Thay 'Login' bằng tên màn hình đăng nhập
+              });
             } catch (error) {
-              Alert.alert('Error', 'Failed to log out. Please try again.');
+              Alert.alert('Lỗi', 'Đăng xuất thất bại. Vui lòng thử lại.');
               console.error('Logout error:', error);
             }
           },
         },
       ],
-      { cancelable: true } // Cho phép hủy khi nhấn bên ngoài Alert
+      { cancelable: true }
     );
   };
-  ;
 
   return (
     <View style={styles.container}>
-      {/* Close Icon */}
+      {/* Nút đóng */}
       <TouchableOpacity style={styles.closeButton} onPress={() => navigation.navigate('home')}>
         <FontAwesome name="close" size={24} color="#000" />
       </TouchableOpacity>
 
-      {/* Menu Items */}
+      {/* Menu */}
       <View style={styles.menuContainer}>
         <MenuItem
           icon="history"
@@ -58,7 +68,7 @@ function NavList() {
           onPress={() => navigation.navigate('History')}
         />
         <MenuItem
-          icon="file-text-o"
+          icon="file-text"
           label="Terms & Policies"
           onPress={() => navigation.navigate('TermsAndPolicies')}
         />
@@ -68,24 +78,24 @@ function NavList() {
           onPress={() => navigation.navigate('Settings')}
         />
         <MenuItem
-          icon="question"
+          icon="info-circle"
           label="Help"
           onPress={() => navigation.navigate('Help')}
         />
         <MenuItem
-          icon="check"
+          icon="comments"
           label="Blog"
           onPress={() => navigation.navigate('Blog')}
         />
         <MenuItem
           icon="arrow-left"
           label="Exit"
-          onPress={handleLogout} // Gọi hàm handleLogout khi người dùng chọn "Exit"
+          onPress={handleLogout}
         />
       </View>
     </View>
   );
-}
+};
 
 interface MenuItemProps {
   icon: string;
