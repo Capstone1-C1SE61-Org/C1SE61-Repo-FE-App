@@ -25,6 +25,7 @@ import HtmlCssDetails from '../../components/lessonNN/htmlcss/HtmlCssDetails';
 import PhpDetails from '../../components/lessonNN/PHP/PhpDetails';
 import JsDetails from '../../components/lessonNN/JS/JsDetails';
 import PythonDetails from '../../components/lessonNN/Python/PythonDetails';
+import learnCs from '../../components/lessonNN/Cshrap/learn';
 
 
 function Wellcome(props : any) {
@@ -245,7 +246,13 @@ function App() {
         <Stack.Screen
           name="JsDetails"
           component={JsDetails}
-          options={{ title: "Nội dung khóa học Javascript" }}
+          options={{ title: "Nội dung javascript" }}
+        />
+
+        <Stack.Screen
+          name="learnCs"
+          component={learnCs}
+          options={{ title: "học bài 1" }}
         />
 
         

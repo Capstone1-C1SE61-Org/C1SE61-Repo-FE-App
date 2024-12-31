@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import { API_URL } from '../../API/AuthContextAPI';
-import { getItem } from 'expo-secure-store';
+import { API_URL, useAuth } from '../../API/AuthContextAPI';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Course {
   courseId: number;
@@ -25,13 +25,15 @@ interface Course {
   instructorId: number;
 }
 
-const HomeTabs = () => {
+function HomeTabs() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-
   const [searchText, setSearchText] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cartCount, setCartCount] = useState(0); 
+  const { authState } = useAuth();
+  const token = authState?.token;
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,7 +53,24 @@ const HomeTabs = () => {
       }
     };
 
+    const fetchCartCount = async () => {
+      try {
+        const response = await fetch(`${API_URL}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCartCount(data.cartDetailList.length); // Đếm số lượng khóa học trong giỏ hàng
+        }
+      } catch (error) {
+        console.error('Error fetching cart count:', error);
+      }
+    };
+
     fetchCourses();
+    fetchCartCount(); // Lấy số lượng khóa học trong giỏ hàng khi component được render
   }, []);
 
   const handleSearch = async () => {
@@ -68,7 +87,6 @@ const HomeTabs = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch search results');
       }
-  
       // Lấy dữ liệu JSON từ phản hồi
       const data = await response.json();
   
@@ -79,33 +97,39 @@ const HomeTabs = () => {
       // Xử lý lỗi, ví dụ: hiển thị thông báo cho người dùng
     }
   };
-  
+
 
   const handleAddToCart = async (courseId: number) => {
     try {
-      const response = await fetch(`${API_URL}/cart/add/${courseId}`, {
-        method: 'GET',
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
+  
+      // Gửi dữ liệu qua query parameters
+      const url = `${API_URL}/cart/add/${courseId}`;
+  
+      const response = await fetch(url, {
+        method: 'GET', // Sử dụng GET để thêm sản phẩm vào giỏ hàng
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
-
         },
       });
   
-      if (response.ok) {
-        Alert.alert('Success', 'Course added to cart successfully!', [
-          { text: 'Go to Cart', onPress: () => navigation.navigate('Cart') },
-          { text: 'Stay Here' },
-        ]);
-      } else {
-        const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Failed to add course to cart.');
+      if (!response.ok) {
+        console.error('Error fetching cart info:', response.statusText);
+        return;
       }
+  
+      // Xử lý phản hồi nếu không phải JSON
+      const result = await response.text(); // Lấy nội dung dưới dạng text
+      setCartCount((prevCount) => prevCount + 1); 
+      console.log('Cart updated successfully:', result);
     } catch (error) {
-      console.error('Error adding course to cart:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      console.error('Network error:', error);
     }
   };
-  
   
   
 
@@ -121,36 +145,36 @@ const HomeTabs = () => {
           style={styles.courseButton}
           onPress={() => {
             const lowerCaseName = item.courseName.toLowerCase();
-          
+  
             switch (true) {
               case lowerCaseName.includes('c#'):
                 navigation.navigate('CSharpDetails', { courseId: item.courseId });
                 break;
-          
+  
               case lowerCaseName.includes('c++'):
                 navigation.navigate('CppDetails', { courseId: item.courseId });
                 break;
-          
+  
               case lowerCaseName.includes('java'):
                 navigation.navigate('JavaDetails', { courseId: item.courseId });
                 break;
-          
+  
               case lowerCaseName.includes('python'):
                 navigation.navigate('PythonDetails', { courseId: item.courseId });
                 break;
-          
+  
               case lowerCaseName.includes('html') && lowerCaseName.includes('css'):
                 navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
                 break;
-          
-              case lowerCaseName.includes('javascript'):
+  
+              case lowerCaseName.includes('js'):
                 navigation.navigate('JsDetails', { courseId: item.courseId });
                 break;
-          
+  
               case lowerCaseName.includes('php'):
                 navigation.navigate('PhpDetails', { courseId: item.courseId });
                 break;
-          
+  
               default:
                 Alert.alert(
                   'Error',
@@ -159,16 +183,18 @@ const HomeTabs = () => {
                 break;
             }
           }}
-          
         >
           <Text style={styles.courseButtonText}>Learn More</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cartIcon} onPress={() => handleAddToCart(item.courseId)}>
-          <Ionicons name="cart" size={24} color="white" />
-        </TouchableOpacity>
+        {item.coursePrice > 0 && (
+          <TouchableOpacity style={styles.cartIcon} onPress={() => handleAddToCart(item.courseId)}>
+            <Ionicons name="cart" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
@@ -221,6 +247,11 @@ const HomeTabs = () => {
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Cart')}>
           <Ionicons name="cart" size={28} color="black" />
+          {cartCount > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartCount}>{cartCount > 9 ? '9+' : cartCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}
@@ -367,6 +398,19 @@ const styles = StyleSheet.create({
   },
   navButton: {
     alignItems: 'center',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  cartCount: {
+    color: '#fff',
+    fontSize: 10,
   },
 });
 

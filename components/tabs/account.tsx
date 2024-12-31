@@ -21,7 +21,6 @@ function Account() {
   const [loading, setLoading] = useState(true);
   const { authState } = useAuth();
   const token = authState?.token;
-  const roles = authState?.roles;
   const navigation = useNavigation();
 
   const updateUserData = (newData: CustomerData) => {
@@ -43,7 +42,7 @@ function Account() {
 
   const fetchUserData = async () => {
     try {
-      await AsyncStorage.getItem(`${token} && ${roles}`);
+      await AsyncStorage.getItem(`${token}`);
       if (!token) {
         console.error('Token not found');
         return;

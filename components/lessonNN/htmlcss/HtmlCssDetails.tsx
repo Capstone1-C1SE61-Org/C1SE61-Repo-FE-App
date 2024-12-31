@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const HtmlCssDetailsScreen = () =>{
+const HtmlCssDetails = () =>{
 
   return (
     <View>
@@ -10,4 +10,4 @@ const HtmlCssDetailsScreen = () =>{
   );
 };
 
-export default HtmlCssDetailsScreen;
+export default HtmlCssDetails;
