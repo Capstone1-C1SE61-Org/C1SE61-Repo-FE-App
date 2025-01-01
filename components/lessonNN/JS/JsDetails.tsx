@@ -1,57 +1,85 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { NavigationProp, ParamListBase, useNavigation, useRoute } from '@react-navigation/native';
+import { API_URL, useAuth } from '../../../API/AuthContextAPI';
 
-type RootStackParamList = {
-  HomeTabs: undefined;
-  NavList: undefined;
-};
-
-type NavigationProps = NavigationProp<RootStackParamList>;
+interface Lesson {
+  lessonId: number;
+  lessonName: string;
+  lessonContent: string;
+  video: string;
+  lessonDuration: string;
+}
 
 function JsDetails() {
-  const contents = [
-    { title: 'Introduction to Java', description: 'Learn the basics of Java programming.' },
-    { title: 'Java Variables', description: 'Understand variables and data types in Java.' },
-    { title: 'Control Structures', description: 'Learn about if-else and loops.' },
-    { title: 'Object-Oriented Programming', description: 'Dive into classes and objects.' },
-    { title: 'Java Collections', description: 'Work with arrays, lists, and maps.' },
-    { title: 'Advanced Topics', description: 'Explore multithreading and streams.' },
-  ];
+  const route = useRoute();
+  const { courseId } = route.params as { courseId: number };
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const { authState } = useAuth();
+  const token = authState?.token;
 
-  const navigation = useNavigation<NavigationProps>();
+  useEffect(() => {
+    const fetchLessons = async () => {
+      try {
+        const response = await fetch(`${API_URL}/lessons/course/${courseId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          setErrorMessage(errorData.message || 'An error occurred');
+          return;
+        }
+
+        const data = await response.json();
+
+        // Kiểm tra dữ liệu trả về và gán giá trị mặc định nếu không phải là mảng
+        if (Array.isArray(data)) {
+          setLessons(data);
+        } else {
+          setLessons([]); // Nếu không phải mảng, gán giá trị mặc định
+        }
+      } catch (error) {
+        console.error('Error fetching lessons:', error);
+        setErrorMessage('Failed to fetch lessons. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLessons();
+  }, [courseId]);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}></View>
-
-      {/* Subheader */}
-      <View style={styles.subHeader}>
-        <Text style={styles.subHeaderText}>JAVA</Text>
-        <Text style={styles.subHeaderText}>A Programming Language</Text>
-      </View>
-
-      {/* Description */}
-      <ScrollView style={styles.description}>
-        <Text style={styles.descriptionText}>Bạn sẽ học được gì?</Text>
-      </ScrollView>
-
-      {/* Contents */}
-      <View style={styles.contents}>
-        <Text style={styles.sectionTitle}>Contents</Text>
-        {contents.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.contentButton}>
-            <Text style={styles.contentButtonTitle}>{item.title}</Text>
-            <Text style={styles.contentButtonDescription}>{item.description}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Learn Button */}
-      <TouchableOpacity style={styles.learnButton}>
-        <Text style={styles.learnButtonText}>Learn</Text>
-      </TouchableOpacity>
+      {loading ? (
+        <ActivityIndicator size="large" color="#FFC107" />
+      ) : errorMessage ? (
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
+      ) : lessons && lessons.length > 0 ? (
+        <ScrollView style={styles.lessonList}>
+          {lessons.map((lesson, index) => (
+            <View key={lesson.lessonId} style={styles.lessonCard}>
+              <Text style={styles.lessonTitle}>{index + 1}. {lesson.lessonName}</Text>
+              <Text style={styles.lessonContent}>{lesson.lessonContent}</Text>
+              <TouchableOpacity
+                style={styles.learnButton}
+                onPress={() => navigation.navigate('DGioithieuHTMLCSS', { lessonId: lesson.lessonId })} // Truyền lessonId
+              >
+                <Text style={styles.learnButtonText}>Learn</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <Text style={styles.errorMessage}>No lessons available.</Text>
+      )}
     </View>
   );
 }
@@ -62,56 +90,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  subHeader: {
-    backgroundColor: '#FFC107',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  subHeaderText: {
-    color: '#fff',
+  errorMessage: {
+    color: 'red',
     fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
-  description: {
-    marginBottom: 16,
+  lessonList: {
+    marginBottom: 60, // Dành không gian cho nút Learn
   },
-  descriptionText: {
-    fontSize: 14,
-    color: '#333',
+  lessonCard: {
+    backgroundColor: '#f8f8f8',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 10,
   },
-  contents: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
+  lessonTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 5,
   },
-  contentButton: {
-    backgroundColor: '#E0E0E0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  contentButtonTitle: {
+  lessonContent: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  contentButtonDescription: {
-    fontSize: 12,
     color: '#555',
   },
   learnButton: {
+    marginTop: 10,
     backgroundColor: '#FFC107',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
