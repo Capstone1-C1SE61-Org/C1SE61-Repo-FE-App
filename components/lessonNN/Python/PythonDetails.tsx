@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const PythonDetailsScreen = () =>{
+const PythonDetails = () =>{
 
   return (
     <View>
@@ -10,4 +10,4 @@ const PythonDetailsScreen = () =>{
   );
 };
 
-export default PythonDetailsScreen;
+export default PythonDetails;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
@@ -7,23 +7,36 @@ type RootStackParamList = {
   NavList: undefined;
 };
 
+type Lesson = {
+  title: string;
+  description: string;
+};
+
+
 type NavigationProps = NavigationProp<RootStackParamList>;
 
-function HamC() {
-  const contents = ['Content 1', 'Content 2', 'Content 3', 'Content 4', 'Content 5', 'Content 6'];
+function JavaDetails() {
+  const [contents, setContents] = useState<Lesson[]>([]);
   const navigation = useNavigation<NavigationProps>();
+
+  useEffect(() => {
+    // Fetch data from API
+    fetch('https://your-api-endpoint.com/api/lessons')
+      .then((response) => response.json())
+      .then((data) => {
+        const lessons = data.map((lesson: any) => ({
+          title: lesson.lesson_name,
+          description: lesson.lesson_content,
+        }));
+        setContents(lessons);
+      })
+      .catch((error) => console.error('Error fetching lessons:', error));
+  }, []);
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        {/* <TouchableOpacity onPress={() => navigation.navigate('HomeTabs')}>
-          <Text style={styles.homeIcon}>🏠</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('NavList')}>
-          <Text style={styles.menuIcon}>☰</Text>
-        </TouchableOpacity> */}
-      </View>
+      <View style={styles.header}></View>
 
       {/* Subheader */}
       <View style={styles.subHeader}>
@@ -34,6 +47,7 @@ function HamC() {
       {/* Description */}
       <ScrollView style={styles.description}>
         <Text style={styles.descriptionText}>Bạn sẽ học được gì?</Text>
+        <Text style={styles.descriptionText1}>Bạn sẽ học được những kiến thức và hiểu biết cơ bản về Java.</Text>
       </ScrollView>
 
       {/* Contents */}
@@ -41,7 +55,8 @@ function HamC() {
         <Text style={styles.sectionTitle}>Contents</Text>
         {contents.map((item, index) => (
           <TouchableOpacity key={index} style={styles.contentButton}>
-            <Text style={styles.contentButtonText}>{item}</Text>
+            <Text style={styles.contentButtonTitle}>{item.title}</Text>
+            <Text style={styles.contentButtonDescription}>{item.description}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -66,12 +81,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  homeIcon: {
-    fontSize: 24,
-  },
-  menuIcon: {
-    fontSize: 24,
-  },
   subHeader: {
     backgroundColor: '#FFC107',
     padding: 10,
@@ -90,6 +99,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  descriptionText1: {
+    fontSize: 14,
+    paddingLeft: 10,
+    color: '#333',
+  },
   contents: {
     marginBottom: 16,
   },
@@ -104,9 +118,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
   },
-  contentButtonText: {
+  contentButtonTitle: {
     fontSize: 14,
+    fontWeight: 'bold',
     color: '#000',
+  },
+  contentButtonDescription: {
+    fontSize: 12,
+    color: '#555',
   },
   learnButton: {
     backgroundColor: '#FFC107',
@@ -120,4 +139,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-export default HamC;
+
+export default JavaDetails;

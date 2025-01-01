@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const PHPDetailsScreen = () =>{
+const PHPDetails = () =>{
 
   return (
     <View>
@@ -10,4 +10,4 @@ const PHPDetailsScreen = () =>{
   );
 };
 
-export default PHPDetailsScreen;
+export default PHPDetails;

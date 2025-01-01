@@ -3,8 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityInd
 import AntDesign from '@expo/vector-icons/build/AntDesign';
 import { Entypo, Feather, FontAwesome } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import axios from 'axios'; // Import axios
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { API_URL } from '../API/AuthContextAPI';
 
 const SignUpScreen = () => {
@@ -18,52 +16,6 @@ const SignUpScreen = () => {
   const [loading, setLoading] = useState(false); // Loading state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-
-
-  // const handleSignUp = async () => {
-  //   if (!name || !username || !email || !phone || !password || !confirmPassword) {
-  //     Alert.alert('Please fill out all fields');
-  //     return;
-  //   }
-
-  //   if (password !== confirmPassword) {
-  //     Alert.alert('Passwords do not match');
-  //     return;
-  //   }
-
-  //   setLoading(true); // Start loading state
-
-  //   try {
-  //     const response = await fetch('http://192.168.0.102:8080/api/v1/public/signup', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         name,
-  //         username,
-  //         email,
-  //         phone,
-  //         password,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-  //     setLoading(false); // Stop loading state
-
-  //     if (response.ok) {
-  //       Alert.alert('Sign Up Successful!', 'Your account has been created.');
-  //       // Navigate or take additional actions after successful signup
-  //     } else {
-  //       Alert.alert('Sign Up Failed', data.message || 'An error occurred. Please try again.');
-  //     }
-  //   } catch (error) {
-  //     setLoading(false); // Stop loading state
-  //     Alert.alert('Error', 'Unable to sign up. Please try again later.');
-  //   }
-  // };
- 
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const handleSignUp = async () => {

@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-import { API_URL } from '../../API/AuthContextAPI';
-import { getItem } from 'expo-secure-store';
+import { API_URL, useAuth } from '../../API/AuthContextAPI';
 
 interface Course {
   courseId: number;
@@ -25,13 +24,14 @@ interface Course {
   instructorId: number;
 }
 
-const HomeTabs = () => {
+function HomeTabs() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-
   const [searchText, setSearchText] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { authState } = useAuth();
+  const token = authState?.token;
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -43,6 +43,7 @@ const HomeTabs = () => {
           return;
         }
         const data = await response.json();
+        console.log(courses);
         setCourses(data);
         setFilteredCourses(data);
       } catch (error) {
@@ -50,7 +51,6 @@ const HomeTabs = () => {
         setErrorMessage('Failed to fetch courses. Please try again later.');
       }
     };
-
     fetchCourses();
   }, []);
 
@@ -68,7 +68,6 @@ const HomeTabs = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch search results');
       }
-  
       // Lấy dữ liệu JSON từ phản hồi
       const data = await response.json();
   
@@ -79,33 +78,38 @@ const HomeTabs = () => {
       // Xử lý lỗi, ví dụ: hiển thị thông báo cho người dùng
     }
   };
-  
+
 
   const handleAddToCart = async (courseId: number) => {
     try {
-      const response = await fetch(`${API_URL}/cart/add/${courseId}`, {
-        method: 'GET',
+      if (!token) {
+        console.error('Token not found');
+        return;
+      }
+  
+      // Gửi dữ liệu qua query parameters
+      const url = `${API_URL}/cart/add/${courseId}`;
+  
+      const response = await fetch(url, {
+        method: 'GET', // Sử dụng GET để thêm sản phẩm vào giỏ hàng
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
-
         },
       });
   
-      if (response.ok) {
-        Alert.alert('Success', 'Course added to cart successfully!', [
-          { text: 'Go to Cart', onPress: () => navigation.navigate('Cart') },
-          { text: 'Stay Here' },
-        ]);
-      } else {
-        const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Failed to add course to cart.');
+      if (!response.ok) {
+        console.error('Error fetching cart info:', response.statusText);
+        return;
       }
+      navigation.navigate('Cart');
+      // Xử lý phản hồi nếu không phải JSON
+      const result = await response.text(); // Lấy nội dung dưới dạng text
+      console.log('Cart updated successfully:', result);
     } catch (error) {
-      console.error('Error adding course to cart:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      console.error('Network error:', error);
     }
   };
-  
   
   
 
@@ -117,58 +121,58 @@ const HomeTabs = () => {
         {item.coursePrice === 0 ? 'Free' : `${item.coursePrice.toLocaleString()} VND`}
       </Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.courseButton}
-          onPress={() => {
+      <TouchableOpacity
+        style={styles.courseButton}
+        onPress={() => {
+          if (item.coursePrice > 0) {
+            Alert.alert(
+              'Thông báo',
+              'Bạn cần mua khóa học trước khi xem chi tiết.'
+            );
+          } else {
             const lowerCaseName = item.courseName.toLowerCase();
-          
-            switch (true) {
-              case lowerCaseName.includes('c#'):
-                navigation.navigate('CSharpDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('c++'):
-                navigation.navigate('CppDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('java'):
-                navigation.navigate('JavaDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('python'):
-                navigation.navigate('PythonDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('html') && lowerCaseName.includes('css'):
-                navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('javascript'):
-                navigation.navigate('JsDetails', { courseId: item.courseId });
-                break;
-          
-              case lowerCaseName.includes('php'):
-                navigation.navigate('PhpDetails', { courseId: item.courseId });
-                break;
-          
-              default:
-                Alert.alert(
-                  'Error',
-                  `No details page available for this course: ${item.courseName}`
-                );
-                break;
+
+            if (lowerCaseName.includes('c#')) {
+              navigation.navigate('CSharpDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('c++')) {
+              navigation.navigate('CppDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('javascript')) {
+              navigation.navigate('JsDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('java')) {
+              navigation.navigate('JavaDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('python')) {
+              navigation.navigate('PythonDetails', { courseId: item.courseId });
+            } else if (
+              lowerCaseName.includes('html') &&
+              lowerCaseName.includes('css')
+            ) {
+              navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('php')) {
+              navigation.navigate('PhpDetails', { courseId: item.courseId });
+            } else {
+              Alert.alert(
+                'Error',
+                `No details page available for this course: ${item.courseName}`
+              );
             }
-          }}
-          
+          }
+        }}
+      >
+        <Text style={styles.courseButtonText}>Learn More</Text>
+      </TouchableOpacity>
+      {item.coursePrice > 0 && (
+        <TouchableOpacity
+          style={styles.cartIcon}
+          onPress={() => handleAddToCart(item.courseId)}
         >
-          <Text style={styles.courseButtonText}>Learn More</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cartIcon} onPress={() => handleAddToCart(item.courseId)}>
           <Ionicons name="cart" size={24} color="white" />
         </TouchableOpacity>
+      )}
+
       </View>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
@@ -367,6 +371,19 @@ const styles = StyleSheet.create({
   },
   navButton: {
     alignItems: 'center',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  cartCount: {
+    color: '#fff',
+    fontSize: 10,
   },
 });
 
