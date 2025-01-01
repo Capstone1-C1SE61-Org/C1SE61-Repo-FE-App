@@ -12,7 +12,6 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
 import { API_URL, useAuth } from '../../API/AuthContextAPI';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Course {
   courseId: number;
@@ -31,7 +30,6 @@ function HomeTabs() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [cartCount, setCartCount] = useState(0); 
   const { authState } = useAuth();
   const token = authState?.token;
 
@@ -45,6 +43,7 @@ function HomeTabs() {
           return;
         }
         const data = await response.json();
+        console.log(courses);
         setCourses(data);
         setFilteredCourses(data);
       } catch (error) {
@@ -52,25 +51,7 @@ function HomeTabs() {
         setErrorMessage('Failed to fetch courses. Please try again later.');
       }
     };
-
-    const fetchCartCount = async () => {
-      try {
-        const response = await fetch(`${API_URL}/cart`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCartCount(data.cartDetailList.length); // Đếm số lượng khóa học trong giỏ hàng
-        }
-      } catch (error) {
-        console.error('Error fetching cart count:', error);
-      }
-    };
-
     fetchCourses();
-    fetchCartCount(); // Lấy số lượng khóa học trong giỏ hàng khi component được render
   }, []);
 
   const handleSearch = async () => {
@@ -121,10 +102,9 @@ function HomeTabs() {
         console.error('Error fetching cart info:', response.statusText);
         return;
       }
-  
+      navigation.navigate('Cart');
       // Xử lý phản hồi nếu không phải JSON
       const result = await response.text(); // Lấy nội dung dưới dạng text
-      setCartCount((prevCount) => prevCount + 1); 
       console.log('Cart updated successfully:', result);
     } catch (error) {
       console.error('Network error:', error);
@@ -141,56 +121,54 @@ function HomeTabs() {
         {item.coursePrice === 0 ? 'Free' : `${item.coursePrice.toLocaleString()} VND`}
       </Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.courseButton}
-          onPress={() => {
+      <TouchableOpacity
+        style={styles.courseButton}
+        onPress={() => {
+          if (item.coursePrice > 0) {
+            Alert.alert(
+              'Thông báo',
+              'Bạn cần mua khóa học trước khi xem chi tiết.'
+            );
+          } else {
             const lowerCaseName = item.courseName.toLowerCase();
-  
-            switch (true) {
-              case lowerCaseName.includes('c#'):
-                navigation.navigate('CSharpDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('c++'):
-                navigation.navigate('CppDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('java'):
-                navigation.navigate('JavaDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('python'):
-                navigation.navigate('PythonDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('html') && lowerCaseName.includes('css'):
-                navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('js'):
-                navigation.navigate('JsDetails', { courseId: item.courseId });
-                break;
-  
-              case lowerCaseName.includes('php'):
-                navigation.navigate('PhpDetails', { courseId: item.courseId });
-                break;
-  
-              default:
-                Alert.alert(
-                  'Error',
-                  `No details page available for this course: ${item.courseName}`
-                );
-                break;
+
+            if (lowerCaseName.includes('c#')) {
+              navigation.navigate('CSharpDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('c++')) {
+              navigation.navigate('CppDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('javascript')) {
+              navigation.navigate('JsDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('java')) {
+              navigation.navigate('JavaDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('python')) {
+              navigation.navigate('PythonDetails', { courseId: item.courseId });
+            } else if (
+              lowerCaseName.includes('html') &&
+              lowerCaseName.includes('css')
+            ) {
+              navigation.navigate('HtmlCssDetails', { courseId: item.courseId });
+            } else if (lowerCaseName.includes('php')) {
+              navigation.navigate('PhpDetails', { courseId: item.courseId });
+            } else {
+              Alert.alert(
+                'Error',
+                `No details page available for this course: ${item.courseName}`
+              );
             }
-          }}
+          }
+        }}
+      >
+        <Text style={styles.courseButtonText}>Learn More</Text>
+      </TouchableOpacity>
+      {item.coursePrice > 0 && (
+        <TouchableOpacity
+          style={styles.cartIcon}
+          onPress={() => handleAddToCart(item.courseId)}
         >
-          <Text style={styles.courseButtonText}>Learn More</Text>
+          <Ionicons name="cart" size={24} color="white" />
         </TouchableOpacity>
-        {item.coursePrice > 0 && (
-          <TouchableOpacity style={styles.cartIcon} onPress={() => handleAddToCart(item.courseId)}>
-            <Ionicons name="cart" size={24} color="white" />
-          </TouchableOpacity>
-        )}
+      )}
+
       </View>
     </View>
   );
@@ -247,11 +225,6 @@ function HomeTabs() {
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Cart')}>
           <Ionicons name="cart" size={28} color="black" />
-          {cartCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartCount}>{cartCount > 9 ? '9+' : cartCount}</Text>
-            </View>
-          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navButton}

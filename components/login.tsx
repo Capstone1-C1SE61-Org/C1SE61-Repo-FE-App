@@ -36,7 +36,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL, useAuth } from '../API/AuthContextAPI';
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('hoanghaiyen');
+  const [username, setUsername] = useState('trankhanhlinh');
   const [password, setPassword] = useState('123456');
   const [showPassword, setShowPassword] = useState(false); // Thêm trạng thái này
   const { onLogin } = useAuth();

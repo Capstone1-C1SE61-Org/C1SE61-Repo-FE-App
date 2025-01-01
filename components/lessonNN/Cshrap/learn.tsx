@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity} from 'react-native';
 
-const learnCs = () =>{
+const LearnCs = () =>{
     const [text, setText] = useState('learn C#');
     const hidden = () => {
         setText('học ngôn ngữ tiếng Anh');
@@ -17,4 +17,4 @@ const learnCs = () =>{
   );
 };
 
-export default learnCs;
+export default LearnCs;

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { Linking } from "react-native";
 import { API_URL, useAuth } from "../../API/AuthContextAPI";
 import { NavigationProp, ParamListBase, useNavigation } from "@react-navigation/native";
 
@@ -74,6 +75,35 @@ const Cart = () => {
     fetchCart();
   }, []);
 
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      const { url } = event;
+  
+      // Parse the query parameters from the returned URL
+      const params = new URLSearchParams(url.split("?")[1]);
+      const responseCode = params.get("vnp_ResponseCode");
+      const transactionStatus = params.get("vnp_TransactionStatus");
+      const transactionId = params.get("vnp_TransactionNo");
+      const message = params.get("vnp_OrderInfo");
+  
+      if (responseCode === "00" && transactionStatus === "00") {
+        Alert.alert("Success", `Payment successful! Transaction ID: ${transactionId}`);
+        setCartData(null); // Clear cart data after successful payment
+      } else {
+        Alert.alert("Error", `Payment failed! Reason: ${message || "Unknown error"}`);
+      }
+    };
+  
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+  
+    // Cleanup subscription
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
+  
+
   const handleRemoveFromCart = async (cartDetailId: number) => {
     if (!cartData) return;
 
@@ -116,6 +146,87 @@ const Cart = () => {
       Alert.alert("Error", "Failed to update the cart. Please try again later.");
     }
   };
+
+  // const handlePayment = async () => {
+  //   try {
+  //     const requestBody = {
+  //       cart: cartData?.cart,
+  //       cartDetailList: cartData?.cartDetailList,
+  //     };
+  
+  //     const response = await fetch(`${API_URL}/payment`, {
+  //       method: "PUT",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(requestBody),
+  //     });
+  
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       console.error("Error during payment:", errorData.message || "An error occurred");
+  //       Alert.alert("Error", "Payment failed. Please try again.");
+  //       return;
+  //     }
+  
+  //     const paymentData = await response.json();
+  //     if (paymentData.url && paymentData.status === 'OK') {
+  //       Linking.openURL(paymentData.url).catch((err) =>
+  //         console.error("Failed to open URL:", err)
+  //       );
+  //       console.log("Payment successful:", paymentData);
+  //     } else {
+  //       Alert.alert("Error", "Payment URL not found.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during payment:", error);
+  //     Alert.alert("Error", "Payment failed. Please try again later.");
+  //   }
+  // };
+  
+  const handlePayment = async () => {
+    try {
+      const requestBody = {
+        cart: cartData?.cart,
+        cartDetailList: cartData?.cartDetailList,
+      };
+  
+      const response = await fetch(`${API_URL}/payment`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error during payment:", errorData.message || "An error occurred");
+        Alert.alert("Error", "Payment failed. Please try again.");
+        return;
+      }
+  
+      const paymentData = await response.json();
+      if (paymentData.url && paymentData.status === "OK") {
+        // Navigate to PaymentStatusScreen with transaction reference
+        navigator.navigate("PaymentStatus", {
+          vnp_TxnRef: paymentData.url.split("vnp_TxnRef=")[1].split("&")[0], // Extract TxnRef
+        });
+        console.log("Payment successful:", paymentData.url);
+        Linking.openURL(paymentData.url).catch((err) =>
+          console.error("Failed to open payment URL:", err)
+        );
+      } else {
+        Alert.alert("Error", "Payment URL not found.");
+      }
+    } catch (error) {
+      console.error("Error during payment:", error);
+      Alert.alert("Error", "Payment failed. Please try again later.");
+    }
+  };
+  
 
   const renderCartItem = ({ item }: { item: CartDetail }) => (
     <View style={styles.cartItem}>
@@ -164,6 +275,9 @@ const Cart = () => {
             keyExtractor={(item) => item.cartDetailId.toString()}
             contentContainerStyle={styles.cartList}
           />
+          <TouchableOpacity style={styles.paymentButton} onPress={handlePayment}>
+            <Text style={styles.paymentButtonText}>Pay Now</Text>
+          </TouchableOpacity>
         </>
       ) : (
         <Text style={styles.loadingText}>Loading cart...</Text>
@@ -234,6 +348,18 @@ const styles = StyleSheet.create({
   removeButtonText: {
     color: "#fff",
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  paymentButton: {
+    backgroundColor: "#28a745",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  paymentButtonText: {
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
   },
   errorMessage: {
