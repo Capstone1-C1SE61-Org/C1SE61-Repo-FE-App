@@ -25,8 +25,8 @@ import HtmlCssDetails from '../../components/lessonNN/htmlcss/HtmlCssDetails';
 import PhpDetails from '../../components/lessonNN/PHP/PhpDetails';
 import JsDetails from '../../components/lessonNN/JS/JsDetails';
 import PythonDetails from '../../components/lessonNN/Python/PythonDetails';
-import PaymentStatusScreen from '../../components/screens/PaymentStatusScreen';
 import LearnCs from '../../components/lessonNN/Cshrap/learn';
+import DGioithieuCpp from '../../components/lessonNN/C++/DGioithieuCpp';
 
 
 function Wellcome(props : any) {
@@ -254,12 +254,11 @@ function App() {
           component={LearnCs}
           options={{ title: "học bài 1" }}
         />
-        <Stack.Screen 
-          name="PaymentStatus" 
-          component={PaymentStatusScreen} 
-          options={{ headerShown: false }}
+        <Stack.Screen
+          name="DGioithieuCpp"
+          component={DGioithieuCpp}
+          options={{ title: "giới thiệu C++" }}
         />
-
         
       </Stack.Navigator>
     </NavigationContainer>

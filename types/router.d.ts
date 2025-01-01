@@ -16,6 +16,12 @@ import LoginScreen from '../components/login';
     }
   }
 
+  declare module 'expo-av' {
+    export * from 'expo-av/build/AV';
+    export * from 'expo-av/build/Video';
+    export * from 'expo-av/build/Audio';
+  }
+
   
   import { createDrawerNavigator } from '@react-navigation/drawer';
 

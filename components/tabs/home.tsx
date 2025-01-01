@@ -112,7 +112,6 @@ function HomeTabs() {
   };
   
   
-
   const renderCourse = ({ item }: { item: Course }) => (
     <View style={styles.courseCard}>
       <Image source={{ uri: item.image }} style={styles.courseImage} />
