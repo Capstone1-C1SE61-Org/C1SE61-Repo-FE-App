@@ -12,7 +12,7 @@ interface Lesson {
   lessonDuration: string;
 }
 
-const DGioithieuCpp = () => {
+const DGioithieuHTML = () => {
   const route = useRoute();
   const { lessonId } = route.params as { lessonId: number }; // Lấy lessonId từ route
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -123,4 +123,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DGioithieuCpp;
+export default DGioithieuHTML;

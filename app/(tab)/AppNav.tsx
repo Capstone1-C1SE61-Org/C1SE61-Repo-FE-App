@@ -25,8 +25,10 @@ import HtmlCssDetails from '../../components/lessonNN/htmlcss/HtmlCssDetails';
 import PhpDetails from '../../components/lessonNN/PHP/PhpDetails';
 import JsDetails from '../../components/lessonNN/JS/JsDetails';
 import PythonDetails from '../../components/lessonNN/Python/PythonDetails';
-import LearnCs from '../../components/lessonNN/Cshrap/learn';
+import LearnCs from '../../components/lessonNN/Cshrap/CSharpDetails';
 import DGioithieuCpp from '../../components/lessonNN/C++/DGioithieuCpp';
+import DGioithieuCSharp from '../../components/lessonNN/Cshrap/DGioithieuCSharp';
+import DGioithieuHTMLCSS from '../../components/lessonNN/htmlcss/DGioithieuHTMLCSS';
 
 
 function Wellcome(props : any) {
@@ -258,6 +260,16 @@ function App() {
           name="DGioithieuCpp"
           component={DGioithieuCpp}
           options={{ title: "giới thiệu C++" }}
+        />
+        <Stack.Screen
+          name="DGioithieuCSharp"
+          component={DGioithieuCSharp}
+          options={{ title: "giới thiệu C#" }}
+        />
+        <Stack.Screen
+          name="DGioithieuHTMLCSS"
+          component={DGioithieuHTMLCSS}
+          options={{ title: "giới thiệu HTML-CSS" }}
         />
         
       </Stack.Navigator>
