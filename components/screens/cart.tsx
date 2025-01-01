@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,281 +7,195 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
-import { Linking } from "react-native";
+import WebView, { WebViewNavigation } from "react-native-webview";
 import { API_URL, useAuth } from "../../API/AuthContextAPI";
-import { NavigationProp, ParamListBase, useNavigation } from "@react-navigation/native";
 
-interface Instructor {
-  instructorName: string;
-  instructorEmail: string;
-  instructorImg: string;
-}
-
-interface Course {
-  courseId: number;
-  courseName: string;
-  coursePrice: number;
-  image: string;
-  instructor: Instructor;
-}
-
-interface CartDetail {
-  cartDetailId: number;
-  course: Course;
-  status: boolean;
-}
-
-interface CartData {
-  cart: {
-    cartId: number;
-    receiverName: string;
-    receiverEmail: string;
-    receiverPhone: string;
-  };
-  cartDetailList: CartDetail[];
-}
+type CartData = {
+  cart: any;
+  cartDetailList: Array<{
+    cartDetailId: number;
+    course: {
+      image: string;
+      courseName: string;
+    };
+  }>;
+};
 
 const Cart = () => {
   const [cartData, setCartData] = useState<CartData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [isWebViewVisible, setIsWebViewVisible] = useState(false);
   const { authState } = useAuth();
   const token = authState?.token;
-  const navigator = useNavigation<NavigationProp<ParamListBase>>();
 
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await fetch(`${API_URL}/cart`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          setErrorMessage(errorData.message || "An error occurred");
-          return;
-        }
-        const data = await response.json();
-        setCartData(data);
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-        setErrorMessage("Failed to fetch cart. Please try again later.");
-      }
-    };
-
     fetchCart();
   }, []);
 
-  useEffect(() => {
-    const handleDeepLink = async (event: { url: string }) => {
-      const { url } = event;
-  
-      // Parse the query parameters from the returned URL
-      const params = new URLSearchParams(url.split("?")[1]);
-      const responseCode = params.get("vnp_ResponseCode");
-      const transactionStatus = params.get("vnp_TransactionStatus");
-      const transactionId = params.get("vnp_TransactionNo");
-      const message = params.get("vnp_OrderInfo");
-  
-      if (responseCode === "00" && transactionStatus === "00") {
-        Alert.alert("Success", `Payment successful! Transaction ID: ${transactionId}`);
-        setCartData(null); // Clear cart data after successful payment
-      } else {
-        Alert.alert("Error", `Payment failed! Reason: ${message || "Unknown error"}`);
-      }
-    };
-  
-    const subscription = Linking.addEventListener("url", handleDeepLink);
-  
-    // Cleanup subscription
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-  
-  
-
-  const handleRemoveFromCart = async (cartDetailId: number) => {
-    if (!cartData) return;
-
-    const updatedCart = {
-      cart: cartData.cart,
-      cartDetailList: cartData.cartDetailList.map((detail) =>
-        detail.cartDetailId === cartDetailId ? { ...detail, status: true } : detail
-      ),
-    };
-
+  const fetchCart = async () => {
     try {
-      const response = await fetch(`${API_URL}/cart/update`, {
-        method: "PUT",
+      setLoading(true);
+      const response = await fetch(`${API_URL}/cart`, {
+        method: "GET",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedCart),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error updating cart:", errorData.message || "An error occurred");
-        Alert.alert("Error", "Failed to remove the course from the cart.");
-        return;
+      const data = await response.json();
+      if (response.ok) {
+        setCartData(data);
+      } else {
+        setErrorMessage(data.message || "Failed to load cart");
       }
-
-      setCartData((prevState) => {
-        if (!prevState) return null;
-        return {
-          ...prevState,
-          cartDetailList: prevState.cartDetailList.filter(
-            (detail) => detail.cartDetailId !== cartDetailId
-          ),
-        };
-      });
-
-      Alert.alert("Success", "Course removed from the cart successfully.");
     } catch (error) {
-      console.error("Error updating cart:", error);
-      Alert.alert("Error", "Failed to update the cart. Please try again later.");
+      console.error("Error fetching cart:", error);
+      setErrorMessage("Failed to fetch cart. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // const handlePayment = async () => {
-  //   try {
-  //     const requestBody = {
-  //       cart: cartData?.cart,
-  //       cartDetailList: cartData?.cartDetailList,
-  //     };
-  
-  //     const response = await fetch(`${API_URL}/payment`, {
-  //       method: "PUT",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(requestBody),
-  //     });
-  
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       console.error("Error during payment:", errorData.message || "An error occurred");
-  //       Alert.alert("Error", "Payment failed. Please try again.");
-  //       return;
-  //     }
-  
-  //     const paymentData = await response.json();
-  //     if (paymentData.url && paymentData.status === 'OK') {
-  //       Linking.openURL(paymentData.url).catch((err) =>
-  //         console.error("Failed to open URL:", err)
-  //       );
-  //       console.log("Payment successful:", paymentData);
-  //     } else {
-  //       Alert.alert("Error", "Payment URL not found.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error during payment:", error);
-  //     Alert.alert("Error", "Payment failed. Please try again later.");
-  //   }
-  // };
-  
   const handlePayment = async () => {
     try {
-      const requestBody = {
-        cart: cartData?.cart,
-        cartDetailList: cartData?.cartDetailList,
-      };
-  
+      setLoading(true);
       const response = await fetch(`${API_URL}/payment`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          cart: cartData?.cart,
+          cartDetailList: cartData?.cartDetailList,
+        }),
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error during payment:", errorData.message || "An error occurred");
-        Alert.alert("Error", "Payment failed. Please try again.");
-        return;
-      }
-  
       const paymentData = await response.json();
-      if (paymentData.url && paymentData.status === "OK") {
-        // Navigate to PaymentStatusScreen with transaction reference
-        navigator.navigate("PaymentStatus", {
-          vnp_TxnRef: paymentData.url.split("vnp_TxnRef=")[1].split("&")[0], // Extract TxnRef
-        });
-        console.log("Payment successful:", paymentData.url);
-        Linking.openURL(paymentData.url).catch((err) =>
-          console.error("Failed to open payment URL:", err)
-        );
+      if (response.ok && paymentData.url) {
+        setPaymentUrl(paymentData.url);
+        setIsWebViewVisible(true);
       } else {
-        Alert.alert("Error", "Payment URL not found.");
+        Alert.alert("Error", "Failed to initiate payment.");
       }
     } catch (error) {
       console.error("Error during payment:", error);
       Alert.alert("Error", "Payment failed. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
-  const renderCartItem = ({ item }: { item: CartDetail }) => (
-    <View style={styles.cartItem}>
-      <Image source={{ uri: item.course.image }} style={styles.courseImage} />
-      <View style={styles.courseInfo}>
-        <Text style={styles.courseTitle}>{item.course.courseName}</Text>
-        <Text style={styles.coursePrice}>
-          {item.course.coursePrice === 0 ? "Free" : `${item.course.coursePrice.toLocaleString()} VND`}
-        </Text>
-        <Text style={styles.instructorName}>
-          Instructor: {item.course.instructor.instructorName}
-        </Text>
-        <Text style={styles.instructorEmail}>
-          Email: {item.course.instructor.instructorEmail}
-        </Text>
-      </View>
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => handleRemoveFromCart(item.cartDetailId)}
-      >
-        <Text style={styles.removeButtonText}>Remove</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const handleWebViewNavigationStateChange = async (navState: WebViewNavigation) => {
+    const { url } = navState;
+
+    if (url.includes("vnp_ResponseCode")) {
+        setIsWebViewVisible(false); // Đóng WebView
+        const params = new URLSearchParams(url.split("?")[1]);
+        const responseCode = params.get("vnp_ResponseCode"); // Mã phản hồi giao dịch
+        const message = params.get("vnp_OrderInfo"); // Thông tin đơn hàng
+        const tnxRef = params.get("vnp_TxnRef"); // Mã giao dịch lấy từ URL
+
+        if (responseCode === "00") {
+            try {
+                // Gọi API backend để xác nhận giao dịch
+                const apiUrl = `${API_URL}/transaction/${tnxRef}`;
+                const response = await fetch(apiUrl, { method: 'GET' }); // Phương thức GET
+
+                if (response.ok) {
+                    // Giao dịch thành công, thông báo cho người dùng
+                    Alert.alert(
+                        "Success",
+                        "Payment completed successfully! A confirmation email has been sent to your address."
+                    );
+                    await fetchCart(); // Lấy lại dữ liệu giỏ hàng sau khi thanh toán thành công
+                } else {
+                    // Xử lý lỗi nếu API trả về trạng thái không thành công
+                    Alert.alert(
+                        "Error",
+                        "Transaction confirmation failed! Please contact support."
+                    );
+                }
+            } catch (error) {
+                // Bắt lỗi nếu có vấn đề khi gọi API
+                Alert.alert(
+                    "Error",
+                    "An error occurred while processing the transaction. Please try again later."
+                );
+                console.error("Transaction Error: ", error);
+            }
+        } else {
+            // Xử lý nếu giao dịch thất bại
+            try {
+                // Gọi API để xóa giao dịch thất bại
+                const failUrl = `${API_URL}/fail/${tnxRef}`;
+                await fetch(failUrl, { method: 'GET' });
+
+                // Thông báo lý do thất bại cho người dùng
+                Alert.alert(
+                    "Error",
+                    `Payment failed! Reason: ${message}`
+                );
+            } catch (error) {
+                Alert.alert(
+                    "Error",
+                    "An error occurred while handling the failed transaction."
+                );
+                console.error("Transaction Fail Error: ", error);
+            }
+        }
+    }
+};
+
+  
+  
+  
+  
 
   return (
     <View style={styles.container}>
-      {errorMessage ? (
-        <Text style={styles.errorMessage}>{errorMessage}</Text>
-      ) : cartData ? (
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
+      {cartData ? (
         <>
-          <View style={styles.receiverInfo}>
-            <Text style={styles.receiverText}>
-              Name: {cartData.cart.receiverName}
-            </Text>
-            <Text style={styles.receiverText}>
-              Email: {cartData.cart.receiverEmail}
-            </Text>
-            <Text style={styles.receiverText}>
-              Phone: {cartData.cart.receiverPhone}
-            </Text>
-          </View>
           <FlatList
             data={cartData.cartDetailList}
-            renderItem={renderCartItem}
+            renderItem={({ item }) => (
+              <View style={styles.cartItem}>
+                <Image source={{ uri: item.course.image }} style={styles.courseImage} />
+                <Text style={styles.courseTitle}>{item.course.courseName}</Text>
+              </View>
+            )}
             keyExtractor={(item) => item.cartDetailId.toString()}
-            contentContainerStyle={styles.cartList}
           />
           <TouchableOpacity style={styles.paymentButton} onPress={handlePayment}>
             <Text style={styles.paymentButtonText}>Pay Now</Text>
           </TouchableOpacity>
         </>
       ) : (
-        <Text style={styles.loadingText}>Loading cart...</Text>
+        <Text>Loading cart...</Text>
       )}
+
+      <Modal visible={isWebViewVisible} animationType="slide">
+        <View style={{ flex: 1 }}>
+          {paymentUrl && (
+            <WebView
+              source={{ uri: paymentUrl }}
+              onNavigationStateChange={handleWebViewNavigationStateChange}
+            />
+          )}
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setIsWebViewVisible(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -289,71 +203,25 @@ const Cart = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 10,
     backgroundColor: "#fff",
-    padding: 10,
-  },
-  receiverInfo: {
-    marginBottom: 20,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 10,
-  },
-  receiverText: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  cartList: {
-    paddingBottom: 20,
   },
   cartItem: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f8f8f8",
-    borderRadius: 10,
     marginBottom: 10,
-    padding: 10,
   },
   courseImage: {
     width: 80,
     height: 80,
-    borderRadius: 10,
     marginRight: 10,
-  },
-  courseInfo: {
-    flex: 1,
   },
   courseTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  coursePrice: {
-    fontSize: 14,
-    color: "#555",
-  },
-  instructorName: {
-    fontSize: 14,
-    color: "#555",
-  },
-  instructorEmail: {
-    fontSize: 14,
-    color: "#555",
-  },
-  removeButton: {
-    backgroundColor: "#dc3545",
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-  },
-  removeButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
   },
   paymentButton: {
     backgroundColor: "#28a745",
-    borderRadius: 10,
     padding: 15,
+    borderRadius: 10,
     alignItems: "center",
     marginTop: 20,
   },
@@ -362,16 +230,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  closeButton: {
+    backgroundColor: "#dc3545",
+    padding: 10,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
   errorMessage: {
     color: "red",
-    textAlign: "center",
     fontSize: 16,
-    marginTop: 20,
-  },
-  loadingText: {
     textAlign: "center",
-    fontSize: 16,
-    marginTop: 20,
   },
 });
 

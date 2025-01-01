@@ -1,31 +1,3 @@
-// import React, { useState } from 'react';
-// import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-// import AntDesign from '@expo/vector-icons/AntDesign';
-// import { Entypo, Feather } from '@expo/vector-icons';
-// import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native';
-
-// const LoginScreen = () => {
-//   const [username, setUsername] = useState('');
-//   const [password, setPassword] = useState('123456');
-  
-//   // Sử dụng useNavigation để lấy navigation
-//   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-
-//   // Đổi tên hàm để không bị trùng với tên component
-//   const handleLogin = () => {
-//     if (!username || !password) {
-//       Alert.alert('Please fill out all fields');
-//       return;
-//     }
-
-//     if (username === 'admin' && password === 'admin') {
-//       // Điều hướng đến màn hình "home"
-//       navigation.navigate('home');
-//     } else {
-//       Alert.alert('Invalid credentials, please try again.');
-//     }
-//   };
-
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
